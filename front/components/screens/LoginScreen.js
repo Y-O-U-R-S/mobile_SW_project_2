@@ -31,7 +31,7 @@ const LoginScreen = ({ navigation }) => {
       />
       <TouchableOpacity
         style={styles.button}
-        onPress={() => navigation.navigate("Main")}
+        onPress={() => navigation.navigate("StartupMain")}
       >
         <Text style={styles.buttonText}>로그인</Text>
       </TouchableOpacity>

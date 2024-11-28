@@ -11,9 +11,9 @@ import NearbyMarketInfoScreen from "./components/screens/StartupNearbyMarketInfo
 import ChatbotScreen from "./components/screens/ChatbotScreen";
 import PersonalInfoScreen from "./components/screens/PersonalInfoScreen";
 import SpaceRentalListScreen from "./components/screens/StartupSpaceRentalListScreen";
-import MyPageScreen from "./components/screens/MyPageScreen";
 import StartupMyPageScreen from "./components/screens/StartupMyPageScreen";
 import NoticeScreen from "./components/screens/NoticeScreen";
+import EditProfile from "./components/screens/EditProfile";
 
 const Stack = createStackNavigator();
 
@@ -23,7 +23,7 @@ export default function App() {
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName="StartupMain"
+          initialRouteName="Login"
           screenOptions={{
             headerShown: false,
             animationEnabled: false,
@@ -46,9 +46,9 @@ export default function App() {
             name="SpaceRentalListScreen"
             component={SpaceRentalListScreen}
           />
-          <Stack.Screen name="MyPage" component={MyPageScreen} />
           <Stack.Screen name="StartupMyPage" component={StartupMyPageScreen} />
           <Stack.Screen name="Notice" component={NoticeScreen} />
+          <Stack.Screen name="EditProfile" component={EditProfile} />
         </Stack.Navigator>
       </NavigationContainer>
     </View>

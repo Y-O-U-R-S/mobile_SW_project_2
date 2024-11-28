@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react"; // useState 추가
 import {
   View,
   Text,
@@ -11,82 +11,73 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import Header from "../common/Header";
 import Footer from "../common/StartupFooter";
+import ChatbotScreen from "./ChatbotScreen";
 
 const MainScreen = () => {
   const navigation = useNavigation();
+  const [isChatOpen, setIsChatOpen] = useState(false); // 상태 정의
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="청순가련" />
+      {/* Header */}
+      <Header title="청순가련" style={styles.header} />
 
-      <ScrollView
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        style={styles.bannerContainer}
-      >
-        <View style={styles.bannerSlide}>
-          <Image
-            source={{ uri: "https://cdn2.thecatapi.com/images/53h.jpg" }}
-            style={styles.bannerImage}
-          />
-          <Text style={styles.bannerText}>
-            "지금 도전하세요! 작은 시작이 큰 성공으로 이어집니다. 🚀"
-          </Text>
-        </View>
-        <View style={styles.bannerSlide}>
-          <Image
-            source={{ uri: "https://cdn2.thecatapi.com/images/bdq.jpg" }}
-            style={styles.bannerImage}
-          />
-          <Text style={styles.bannerText}>
-            "위기는 기회입니다! 지금이 바로 창업의 순간입니다. 💡"
-          </Text>
-        </View>
-      </ScrollView>
-
+      {/* Main Content */}
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        <Text style={styles.sectionHeader}>🔥 뜨끈 뜨끈 신상 팝업!</Text>
-        <Text style={styles.subText}>
-          "이전에 없던 새로운 시도로 여러분의 아이디어를 현실로 만들어보세요."
-        </Text>
-        <View style={styles.popUpList}>
-          <TouchableOpacity style={styles.popUpCard}>
-            <Image
-              source={{
-                uri: "https://cdn2.thecatapi.com/images/BDMOZo668.jpg",
-              }}
-              style={styles.popUpImage}
-            />
-            <Text style={styles.popUpTitle}>시몬스 하드웨어 스토어</Text>
-            <Text style={styles.popUpDate}>9월 11일 ~ 12월 31일</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.popUpCard}>
-            <Image
-              source={{ uri: "https://cdn2.thecatapi.com/images/1u8.jpg" }}
-              style={styles.popUpImage}
-            />
-            <Text style={styles.popUpTitle}>두근 두근 온돌 남탕 온남</Text>
-            <Text style={styles.popUpDate}>9월 12일 ~ 12월 31일</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.popUpCard}>
-            <Image
-              source={{
-                uri: "https://cdn2.thecatapi.com/images/8krfAgKYD.jpg",
-              }}
-              style={styles.popUpImage}
-            />
-            <Text style={styles.popUpTitle}>초록 초록 잔디밭</Text>
-            <Text style={styles.popUpDate}>9월 30일 ~ 12월 29일</Text>
-          </TouchableOpacity>
+        {/* Title Section */}
+        <View style={styles.titleSection}>
+          <Text style={styles.title}>2024 여성 창업자 지원 제도 3가지</Text>
+          <Text style={styles.subTitle}>written by 청순가련</Text>
         </View>
-        <Text style={styles.motivation}>
-          "창업은 빠르게 시작하고, 천천히 배우는 과정입니다. 작은 시도도
-          소중한 첫 걸음입니다."
-        </Text>
+
+        {/* Info Section */}
+        <View style={styles.infoSection}>
+          <Text style={styles.infoTitle}>예비 창업자 공간</Text>
+          <View style={styles.infoBox}>
+            <Text style={styles.infoSubTitle}>이런 정보 어떠세요?</Text>
+            <View style={styles.infoList}>
+              <Text style={styles.infoItem}>- 창업 절차</Text>
+              <Text style={styles.infoItem}>- 창업 필요 서류</Text>
+              <Text style={styles.infoItem}>- 사업자 등록 전 체크 사항</Text>
+              <Text style={styles.infoItem}>- 창업 필요 서류</Text>
+            </View>
+            <Image
+              source={{
+                uri: "https://www.example.com/image.png",
+              }}
+              style={styles.infoImage}
+            />
+          </View>
+        </View>
+
+        <View style={styles.advertisement}>
+          <Image
+            source={{
+              uri: "https://www.example.com/ad-image.png",
+            }}
+            style={styles.adImage}
+          />
+        </View>
       </ScrollView>
 
+      {/* Footer */}
       <Footer />
+
+      {/* Chatbot Button */}
+      <TouchableOpacity
+        style={styles.chatButton}
+        onPress={() => setIsChatOpen(true)} // 챗봇 열기
+      >
+        <Text style={styles.chatButtonText}>💬</Text>
+      </TouchableOpacity>
+
+      {/* Chatbot Screen */}
+      {isChatOpen && (
+        <ChatbotScreen
+          isVisible={isChatOpen} // 챗봇 상태 전달
+          onClose={() => setIsChatOpen(false)} // 닫기 핸들러
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -96,76 +87,87 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  bannerContainer: {
-    height: 200,
-    marginVertical: 10,
-  },
-  bannerSlide: {
-    width: 400,
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
-  },
-  bannerImage: {
-    width: "100%",
-    height: 400,
-    borderRadius: 10,
-  },
-  bannerText: {
-    position: "absolute",
-    bottom: 10,
-    left: 10,
-    color: "#fff",
+  header: {
+    backgroundColor: "#FF6B6B",
+    fontSize: 20,
     fontWeight: "bold",
-    fontSize: 18,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    padding: 5,
-    borderRadius: 5,
+    color: "#fff",
   },
   contentContainer: {
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
   },
-  sectionHeader: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginVertical: 10,
-  },
-  subText: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 10,
-  },
-  popUpList: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  popUpCard: {
-    width: 110,
+  titleSection: {
+    marginBottom: 20,
     alignItems: "center",
-    marginVertical: 10,
   },
-  popUpImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-  },
-  popUpTitle: {
-    fontSize: 14,
+  title: {
+    fontSize: 22,
     fontWeight: "bold",
+    textAlign: "center",
+  },
+  subTitle: {
+    fontSize: 14,
+    color: "#888",
     textAlign: "center",
     marginTop: 5,
   },
-  popUpDate: {
-    fontSize: 12,
-    color: "#888",
-    textAlign: "center",
+  infoSection: {
+    marginVertical: 15,
   },
-  motivation: {
-    marginTop: 20,
+  infoTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  infoBox: {
+    borderWidth: 1,
+    borderColor: "#FF6B6B",
+    borderRadius: 10,
+    padding: 15,
+    backgroundColor: "#FFF8F0",
+  },
+  infoSubTitle: {
     fontSize: 16,
     fontWeight: "bold",
-    textAlign: "center",
+    color: "#FF6B6B",
+    marginBottom: 10,
+  },
+  infoList: {
+    marginBottom: 15,
+  },
+  infoItem: {
+    fontSize: 14,
     color: "#333",
+    marginBottom: 5,
+  },
+  infoImage: {
+    width: "100%",
+    height: 150,
+    resizeMode: "contain",
+    marginTop: 10,
+  },
+  advertisement: {
+    marginTop: 20,
+    alignItems: "center",
+  },
+  adImage: {
+    width: "100%",
+    height: 100,
+    resizeMode: "contain",
+  },
+  chatButton: {
+    position: "absolute",
+    bottom: 120,
+    right: 20,
+    backgroundColor: "#007AFF",
+    borderRadius: 50,
+    padding: 15,
+    elevation: 5,
+  },
+  chatButtonText: {
+    fontSize: 24,
+    color: "#fff",
   },
 });
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   SafeAreaView,
   View,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import Header from "../common/Header";
 import Footer from "../common/StartupFooter";
@@ -15,72 +16,56 @@ import { useNavigation } from "@react-navigation/native";
 const SpaceRentalListScreen = () => {
   const navigation = useNavigation();
 
-  const rentalSpaces = [
-    {
-      id: 1,
-      image: "https://cdn2.thecatapi.com/images/ctb.jpg",
-      price: "월 30만원",
-      size: "125m²",
-      distance: "온양온천역 걸어서 5분",
-      availability: "임대중",
-      availabilityColor: "red",
-      availableFrom: "2025년 3월부터 신청 가능",
-    },
-    {
-      id: 2,
-      image: "https://cdn2.thecatapi.com/images/c3g.jpg",
-      price: "월 50만원",
-      size: "200m²",
-      distance: "온양역에서 뛰어서 1분",
-      availability: "임대가능",
-      availabilityColor: "blue",
-      availableFrom: "임대신청 가능",
-    },
-  ];
+  // State for storing rental spaces and loading state
+  const [rentalSpaces, setRentalSpaces] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch data from the server
+  useEffect(() => {
+    const fetchRentalSpaces = async () => {
+      try {
+        const response = await fetch("http://10.20.38.156:8000/rentalSpaces");
+        if (!response.ok) {
+          throw new Error("Failed to fetch rental spaces");
+        }
+        const data = await response.json();
+        setRentalSpaces(data); // Set data to the state
+      } catch (error) {
+        console.error("Error fetching rental spaces:", error);
+      } finally {
+        setLoading(false); // Stop loading
+      }
+    };
+
+    fetchRentalSpaces();
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <Header title="청순가련" />
       <ScrollView style={styles.container}>
-        <View style={styles.listHeader}>
-          <Text style={styles.sectionTitle}>임대 창업 공간</Text>
-          <View style={styles.headerIcons}>
-            <TouchableOpacity>
-              <Text style={styles.icon}>🔍</Text>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={styles.icon}>⚙️</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {rentalSpaces.map((space) => (
-          <TouchableOpacity
-            key={space.id}
-            style={styles.card}
-            onPress={() =>
-              navigation.navigate("SpaceRentalDetailScreen", { space })
-            }
-          >
-            <Image source={{ uri: space.image }} style={styles.image} />
-            <View style={styles.cardContent}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.price}>{space.price}</Text>
-                <Text
-                  style={[
-                    styles.availability,
-                    { color: space.availabilityColor },
-                  ]}
-                >
-                  {space.availability}
-                </Text>
+        {loading ? (
+          <ActivityIndicator size="large" color="#FF6B6B" />
+        ) : rentalSpaces.length > 0 ? (
+          rentalSpaces.map((space) => (
+            <TouchableOpacity
+              key={space.id}
+              style={styles.card}
+              onPress={() =>
+                navigation.navigate("SpaceRentalDetailScreen", { space })
+              }
+            >
+              <Image source={{ uri: space.imageUrl }} style={styles.image} />
+              <View style={styles.content}>
+                <Text style={styles.cardTitle}>{space.name}</Text>
+                <Text style={styles.location}>{space.address}</Text>
+                <Text style={styles.description}>{space.description}</Text>
               </View>
-              <Text style={styles.size}>{space.size}</Text>
-              <Text style={styles.distance}>{space.distance}</Text>
-              <Text style={styles.availableFrom}>{space.availableFrom}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.noData}>등록된 공간이 없습니다.</Text>
+        )}
       </ScrollView>
       <Footer />
     </SafeAreaView>
@@ -93,75 +78,43 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingHorizontal: 10,
-  },
-  listHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginVertical: 10,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  headerIcons: {
-    flexDirection: "row",
-  },
-  icon: {
-    fontSize: 20,
-    marginHorizontal: 10,
+    marginTop: 10,
+    paddingHorizontal: 20,
   },
   card: {
-    flexDirection: "row",
-    backgroundColor: "#f9f9f9",
-    marginVertical: 15,
+    backgroundColor: "#FFF8F0",
     borderRadius: 15,
-    padding: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-    elevation: 3,
+    marginVertical: 10,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#FF6B6B",
   },
   image: {
-    width: 120,
-    height: 120,
-    borderRadius: 10,
-    marginRight: 15,
+    width: "100%",
+    height: 200,
   },
-  cardContent: {
-    flex: 1,
+  content: {
+    padding: 15,
   },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  price: {
-    fontSize: 20,
+  cardTitle: {
+    fontSize: 18,
     fontWeight: "bold",
+    marginBottom: 5,
   },
-  size: {
-    fontSize: 16,
-    color: "#555",
-    marginVertical: 4,
-  },
-  distance: {
-    fontSize: 16,
-    color: "#888",
-  },
-  availability: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginLeft: 10,
-  },
-  availableFrom: {
+  location: {
     fontSize: 14,
     color: "#888",
-    marginTop: 4,
+    marginBottom: 10,
+  },
+  description: {
+    fontSize: 14,
+    color: "#555",
+  },
+  noData: {
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 20,
+    color: "#888",
   },
 });
 
