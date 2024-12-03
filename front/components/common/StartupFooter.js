@@ -75,12 +75,13 @@ const StartupFooter = () => {
         <Icon
           name="account-box-outline"
           size={35}
-          color={isActive("StartupMyPage") ? "#4CAF50" : "#000"}
+          color={isActive("StartupMyPage") || isActive("QnA") ? "#4CAF50" : "#000"}
         />
         <Text
           style={[
             styles.footerText,
             isActive("StartupMyPage") && styles.activeText,
+            isActive("QnA") && styles.activeText,
           ]}
         >
           마이페이지

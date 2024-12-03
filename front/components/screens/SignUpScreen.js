@@ -8,43 +8,26 @@ import {
   SafeAreaView,
   Alert,
 } from "react-native";
-import DropDownPicker from "react-native-dropdown-picker";
 
 const SignUpScreen = ({ navigation }) => {
-  const [openYear, setOpenYear] = useState(false);
-  const [openMonth, setOpenMonth] = useState(false);
-  const [openDay, setOpenDay] = useState(false);
-
-  const [email, setEmail] = useState("");
+  const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phone, setPhone] = useState("");
+  const [birth, setBirth] = useState("");
+  const [address, setAddress] = useState("");
   const [job, setJob] = useState("");
-  const [birthYear, setBirthYear] = useState("2001");
-  const [birthMonth, setBirthMonth] = useState("02");
-  const [birthDay, setBirthDay] = useState("28");
-
-  const years = Array.from({ length: 100 }, (_, i) => ({
-    label: (2024 - i).toString(),
-    value: (2024 - i).toString(),
-  }));
-  const months = Array.from({ length: 12 }, (_, i) => ({
-    label: (i + 1).toString().padStart(2, "0"),
-    value: (i + 1).toString().padStart(2, "0"),
-  }));
-  const days = Array.from({ length: 31 }, (_, i) => ({
-    label: (i + 1).toString().padStart(2, "0"),
-    value: (i + 1).toString().padStart(2, "0"),
-  }));
 
   const validateForm = () => {
     if (
-      !email ||
+      !id ||
       !password ||
       !confirmPassword ||
       !name ||
-      !phoneNumber ||
+      !phone ||
+      !birth ||
+      !address ||
       !job
     ) {
       Alert.alert("오류", "모든 필드를 입력해주세요.");
@@ -57,11 +40,42 @@ const SignUpScreen = ({ navigation }) => {
     return true;
   };
 
-  const handleSignUp = () => {
-    if (validateForm()) {
-      // 회원가입 완료 후 로그인 화면으로 이동
-      Alert.alert("회원가입 성공", "회원가입이 완료되었습니다.");
-      navigation.navigate("Login"); // 'Login' 또는 메인 화면 'Main'으로 이동
+  const handleSignUp = async () => {
+    if (!validateForm()) return;
+
+    try {
+      const response = await fetch("http://10.20.39.17:8000/user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id,
+          password,
+          name,
+          email: id, // 이메일과 아이디를 동일하게 설정
+          phone,
+          birth,
+          address,
+          job,
+        }),
+      });
+
+      if (response.ok) {
+        Alert.alert("회원가입 성공", "로그인 화면으로 이동합니다.");
+        navigation.navigate("Login");
+      } else {
+        const errorText = await response.text();
+        Alert.alert(
+          "회원가입 실패",
+          errorText || "회원가입 중 문제가 발생했습니다."
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        "오류",
+        `회원가입 요청 중 문제가 발생했습니다: ${error.message}`
+      );
     }
   };
 
@@ -75,22 +89,14 @@ const SignUpScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.form}>
-        {/* 이메일 입력 */}
-        <View style={styles.row}>
-          <TextInput
-            style={[styles.input, { flex: 1 }]}
-            placeholder="아이디(이메일)"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-          <TouchableOpacity style={styles.duplicateCheckButton}>
-            <Text style={styles.duplicateCheckText}>중복확인</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* 비밀번호 */}
+        <TextInput
+          style={styles.input}
+          placeholder="아이디(이메일)"
+          value={id}
+          onChangeText={setId}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
         <TextInput
           style={styles.input}
           placeholder="비밀번호"
@@ -105,62 +111,37 @@ const SignUpScreen = ({ navigation }) => {
           onChangeText={setConfirmPassword}
           secureTextEntry
         />
-
-        {/* 이름 */}
         <TextInput
           style={styles.input}
           placeholder="이름"
           value={name}
           onChangeText={setName}
         />
-
-        {/* 전화번호 */}
         <TextInput
           style={styles.input}
           placeholder="전화번호"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
+          value={phone}
+          onChangeText={setPhone}
           keyboardType="phone-pad"
         />
-
-        {/* 생년월일 */}
-        <Text style={styles.label}>생년월일</Text>
-        <View style={styles.row}>
-          <DropDownPicker
-            open={openYear}
-            value={birthYear}
-            items={years}
-            setOpen={setOpenYear}
-            setValue={setBirthYear}
-            placeholder="연도"
-            style={styles.dropdown}
-            containerStyle={styles.dropdownContainer}
-            dropDownContainerStyle={styles.dropdownList}
-          />
-          <DropDownPicker
-            open={openMonth}
-            value={birthMonth}
-            items={months}
-            setOpen={setOpenMonth}
-            setValue={setBirthMonth}
-            placeholder="월"
-            style={styles.dropdown}
-            containerStyle={styles.dropdownContainer}
-            dropDownContainerStyle={styles.dropdownList}
-          />
-          <DropDownPicker
-            open={openDay}
-            value={birthDay}
-            items={days}
-            setOpen={setOpenDay}
-            setValue={setBirthDay}
-            placeholder="일"
-            style={styles.dropdown}
-            containerStyle={styles.dropdownContainer}
-            dropDownContainerStyle={styles.dropdownList}
-          />
-        </View>
-
+        <TextInput
+          style={styles.input}
+          placeholder="생년월일 (YYYY-MM-DD)"
+          value={birth}
+          onChangeText={setBirth}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="주소"
+          value={address}
+          onChangeText={setAddress}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="직업"
+          value={job}
+          onChangeText={setJob}
+        />
         <TouchableOpacity style={styles.submitButton} onPress={handleSignUp}>
           <Text style={styles.submitButtonText}>회원가입</Text>
         </TouchableOpacity>
@@ -202,40 +183,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     paddingVertical: 8,
     marginBottom: 20,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  duplicateCheckButton: {
-    backgroundColor: "#F56A79",
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 5,
-    marginLeft: 10,
-  },
-  duplicateCheckText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  dropdown: {
-    borderColor: "#F56A79",
-    borderRadius: 5,
-    height: 40,
-  },
-  dropdownContainer: {
-    width: "30%",
-  },
-  dropdownList: {
-    backgroundColor: "#fff",
-    borderColor: "#F56A79",
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 10,
-    fontWeight: "bold",
-    color: "#555",
   },
   submitButton: {
     backgroundColor: "#F56A79",

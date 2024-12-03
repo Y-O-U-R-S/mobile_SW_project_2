@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   View,
   Text,
@@ -9,16 +9,20 @@ import {
 import Header from "../common/Header";
 import Footer from "../common/StartupFooter";
 import { useNavigation } from "@react-navigation/native";
+import { UserContext } from "../../contexts/UserContext";
 
 const MyPageScreen = () => {
   const navigation = useNavigation();
+  const { userInfo } = useContext(UserContext); // UserContext에서 로그인 정보 가져오기
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <Header title="마이페이지" />
       <View style={styles.container}>
         <View style={styles.userSection}>
-          <Text style={styles.userName}>유창석</Text>
+          <Text style={styles.userName}>
+            {userInfo?.name || "사용자"} {/* 로그인된 사용자 이름 */}
+          </Text>
           <Text style={styles.userRole}>
             <Text style={styles.userRoleHighlight}>창업자님</Text> 환영합니다!
           </Text>
@@ -31,7 +35,10 @@ const MyPageScreen = () => {
         </View>
 
         <View style={styles.menuSection}>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("Notice")}
+          >
             <Text style={styles.menuText}>공지사항 / 이벤트</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem}>
@@ -40,11 +47,11 @@ const MyPageScreen = () => {
           <TouchableOpacity style={styles.menuItem}>
             <Text style={styles.menuText}>팝업스토어에 홍보하기</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("QnA")}
+          >
             <Text style={styles.menuText}>QnA</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuText}>문의하기</Text>
           </TouchableOpacity>
         </View>
       </View>

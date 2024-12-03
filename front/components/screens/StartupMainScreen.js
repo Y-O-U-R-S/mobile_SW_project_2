@@ -1,4 +1,4 @@
-import React, { useState } from "react"; // useState 추가
+import React, { useContext, useState } from "react";
 import {
   View,
   Text,
@@ -8,52 +8,50 @@ import {
   TouchableOpacity,
   SafeAreaView,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { UserContext } from "../../contexts/UserContext";
 import Header from "../common/Header";
 import Footer from "../common/StartupFooter";
 import ChatbotScreen from "./ChatbotScreen";
 
 const MainScreen = () => {
-  const navigation = useNavigation();
-  const [isChatOpen, setIsChatOpen] = useState(false); // 상태 정의
+  const { userInfo } = useContext(UserContext); // 로그인한 유저 정보 가져오기
+  const [isChatOpen, setIsChatOpen] = useState(false); // 챗봇 열기 상태
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
       <Header title="청순가련" style={styles.header} />
 
-      {/* Main Content */}
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        {/* Title Section */}
         <View style={styles.titleSection}>
           <Text style={styles.title}>2024 여성 창업자 지원 제도 3가지</Text>
-          <Text style={styles.subTitle}>written by 청순가련</Text>
         </View>
 
-        {/* Info Section */}
         <View style={styles.infoSection}>
           <Text style={styles.infoTitle}>예비 창업자 공간</Text>
           <View style={styles.infoBox}>
-            <Text style={styles.infoSubTitle}>이런 정보 어떠세요?</Text>
+            <Text style={styles.infoSubTitle}>
+              {userInfo?.name} 님, 이런 정보 어떠세요?
+            </Text>
             <View style={styles.infoList}>
               <Text style={styles.infoItem}>- 창업 절차</Text>
               <Text style={styles.infoItem}>- 창업 필요 서류</Text>
               <Text style={styles.infoItem}>- 사업자 등록 전 체크 사항</Text>
-              <Text style={styles.infoItem}>- 창업 필요 서류</Text>
+              <Text style={styles.infoItem}>- 창업 지원 제도</Text>
             </View>
             <Image
               source={{
-                uri: "https://www.example.com/image.png",
+                uri: "https://cataas.com/cat", // 임시 이미지 URL
               }}
               style={styles.infoImage}
             />
           </View>
         </View>
 
+        {/* Advertisement Section */}
         <View style={styles.advertisement}>
           <Image
             source={{
-              uri: "https://www.example.com/ad-image.png",
+              uri: "https://cataas.com/cat", // 임시 광고 이미지 URL
             }}
             style={styles.adImage}
           />

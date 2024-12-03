@@ -21,7 +21,7 @@ const StartupNearbyMarketInfoScreen = () => {
 
   const getCoordinates = async () => {
     try {
-      const response = await fetch("http://10.20.38.156:8000/rentalSpaces");
+      const response = await fetch("http://10.20.39.17:8000/rentalSpaces");
       const rentalSpaces = await response.json();
 
       const results = await Promise.all(

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   View,
   Text,
@@ -7,46 +7,128 @@ import {
   TextInput,
   TouchableOpacity,
   Modal,
+  Alert,
 } from "react-native";
 import Header from "../common/Header";
+import { UserContext } from "../../contexts/UserContext";
 
-const EditProfile = () => {
+const EditProfile = ({ navigation }) => {
+  const { userInfo, setUserInfo } = useContext(UserContext); // UserContext 사용
+  const [formData, setFormData] = useState({
+    email: userInfo?.email || "",
+    password: "",
+    phone: userInfo?.phone || "",
+    job: userInfo?.job || "",
+    name: userInfo?.name || "",
+  });
+  const [currentPassword, setCurrentPassword] = useState(""); // 현재 비밀번호 입력
   const [showModal, setShowModal] = useState(false);
 
-  const handleSave = () => {
-    // 저장 로직 추가
-    setShowModal(true); // 모달 열기
+  const handleInputChange = (field, value) => {
+    setFormData((prevData) => ({ ...prevData, [field]: value }));
+  };
+
+  const handleSave = async () => {
+    if (!currentPassword) {
+      Alert.alert("오류", "현재 비밀번호를 입력해주세요.");
+      return;
+    }
+
+    try {
+      // 서버에 현재 비밀번호 확인 요청
+      const authResponse = await fetch(
+        `http://10.20.39.17:8000/user/login`, // 로그인 인증 요청
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            id: userInfo.id,
+            password: currentPassword, // 입력된 현재 비밀번호
+          }),
+        }
+      );
+
+      if (!authResponse.ok) {
+        Alert.alert("오류", "현재 비밀번호가 올바르지 않습니다.");
+        return;
+      }
+
+      // 비밀번호가 맞다면 프로필 수정 요청
+      const response = await fetch(
+        `http://10.20.39.17:8000/user/${userInfo.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...formData,
+            id: userInfo.id, // ID는 변경되지 않도록
+            birth: userInfo.birth, // 생일은 기존 값 유지
+            address: userInfo.address, // 주소는 기존 값 유지
+          }),
+        }
+      );
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        setUserInfo(updatedUser); // UserContext 업데이트
+        setShowModal(true); // 수정 완료 모달 열기
+      } else {
+        const errorText = await response.text();
+        Alert.alert("오류", errorText || "프로필 수정에 실패했습니다.");
+      }
+    } catch (error) {
+      Alert.alert(
+        "오류",
+        `프로필 수정 중 문제가 발생했습니다: ${error.message}`
+      );
+    }
   };
 
   const closeModal = () => {
     setShowModal(false); // 모달 닫기
+    navigation.goBack(); // 이전 화면으로 이동
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <Header title="개인정보 수정" />
       <View style={styles.container}>
-        {/* 이메일 */}
+        {/* 이메일 (수정 불가) */}
         <View style={styles.inputContainer}>
           <Text style={styles.label}>아이디(이메일)</Text>
           <TextInput
             style={styles.inputDisabled}
-            value="example@email.com"
+            value={formData.email}
             editable={false} // 이메일은 수정 불가
+          />
+        </View>
+
+        {/* 현재 비밀번호 */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>현재 비밀번호</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="현재 비밀번호를 입력하세요"
+            secureTextEntry
+            value={currentPassword}
+            onChangeText={setCurrentPassword}
           />
         </View>
 
         {/* 비밀번호 */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>비밀번호</Text>
+          <Text style={styles.label}>새 비밀번호</Text>
           <TextInput
             style={styles.input}
-            placeholder="비밀번호를 입력하세요"
+            placeholder="새 비밀번호를 입력하세요"
             secureTextEntry
+            value={formData.password}
+            onChangeText={(text) => handleInputChange("password", text)}
           />
-          <TouchableOpacity style={styles.editButton}>
-            <Text style={styles.editButtonText}>수정</Text>
-          </TouchableOpacity>
         </View>
 
         {/* 휴대폰 번호 */}
@@ -56,10 +138,9 @@ const EditProfile = () => {
             style={styles.input}
             placeholder="휴대폰 번호를 입력하세요"
             keyboardType="phone-pad"
+            value={formData.phone}
+            onChangeText={(text) => handleInputChange("phone", text)}
           />
-          <TouchableOpacity style={styles.editButton}>
-            <Text style={styles.editButtonText}>수정</Text>
-          </TouchableOpacity>
         </View>
 
         {/* 직업 */}
@@ -68,10 +149,9 @@ const EditProfile = () => {
           <TextInput
             style={styles.input}
             placeholder="직업을 입력하세요"
+            value={formData.job}
+            onChangeText={(text) => handleInputChange("job", text)}
           />
-          <TouchableOpacity style={styles.editButton}>
-            <Text style={styles.editButtonText}>수정</Text>
-          </TouchableOpacity>
         </View>
 
         {/* 이름 */}
@@ -80,10 +160,9 @@ const EditProfile = () => {
           <TextInput
             style={styles.input}
             placeholder="이름을 입력하세요"
+            value={formData.name}
+            onChangeText={(text) => handleInputChange("name", text)}
           />
-          <TouchableOpacity style={styles.editButton}>
-            <Text style={styles.editButtonText}>수정</Text>
-          </TouchableOpacity>
         </View>
 
         {/* 저장 버튼 */}
@@ -132,7 +211,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     fontSize: 14,
-    backgroundColor: "#fff", // 입력 배경색 흰색으로 설정
+    backgroundColor: "#fff",
     color: "#333",
   },
   inputDisabled: {
@@ -141,21 +220,8 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
     fontSize: 14,
-    backgroundColor: "#f0f0f0", // 비활성화된 입력 필드 배경색
+    backgroundColor: "#f0f0f0",
     color: "#888",
-  },
-  editButton: {
-    position: "absolute",
-    right: 10,
-    top: 30,
-    backgroundColor: "#ddd",
-    paddingHorizontal: 15,
-    paddingVertical: 5,
-    borderRadius: 5,
-  },
-  editButtonText: {
-    fontSize: 14,
-    color: "#333",
   },
   saveButton: {
     backgroundColor: "orange",
@@ -187,22 +253,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
-  modalText: {
-    fontSize: 16,
-    color: "#333",
-    marginBottom: 15,
-  },
+  modalText: { fontSize: 16, color: "#333", marginBottom: 15 },
   modalButton: {
     backgroundColor: "#FF6B6B",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
   },
-  modalButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
+  modalButtonText: { color: "#fff", fontSize: 14, fontWeight: "bold" },
 });
 
 export default EditProfile;
