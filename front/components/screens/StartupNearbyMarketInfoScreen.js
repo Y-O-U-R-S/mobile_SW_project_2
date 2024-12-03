@@ -13,15 +13,17 @@ import axios from "axios";
 import { useNavigation } from "@react-navigation/native";
 import Header from "../common/Header";
 import Footer from "../common/StartupFooter";
+import { useBaseUrl } from "../../contexts/BaseUrlContext";
 
 const StartupNearbyMarketInfoScreen = () => {
   const [coordinates, setCoordinates] = useState([]);
   const mapRef = useRef(null);
   const navigation = useNavigation();
+  const baseUrl = useBaseUrl(); // useBaseUrl 훅 호출
 
   const getCoordinates = async () => {
     try {
-      const response = await fetch("http://10.20.39.17:8000/rentalSpaces");
+      const response = await fetch(`${baseUrl}/rentalSpaces`); // baseUrl 사용
       const rentalSpaces = await response.json();
 
       const results = await Promise.all(

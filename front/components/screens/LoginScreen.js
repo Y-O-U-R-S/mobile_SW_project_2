@@ -8,11 +8,13 @@ import {
   Alert,
 } from "react-native";
 import { UserContext } from "../../contexts/UserContext";
+import { useBaseUrl } from "../../contexts/BaseUrlContext"; // useBaseUrl로 수정
 
 const LoginScreen = ({ navigation }) => {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const { setUserInfo } = useContext(UserContext);
+  const baseUrl = useBaseUrl(); // baseUrl을 가져옴
 
   const handleLogin = async () => {
     if (!id || !password) {
@@ -21,7 +23,7 @@ const LoginScreen = ({ navigation }) => {
     }
 
     try {
-      const response = await fetch("http://192.168.0.74:8000/user/login", {
+      const response = await fetch(`${baseUrl}/user/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -30,12 +32,11 @@ const LoginScreen = ({ navigation }) => {
       });
 
       if (response.ok) {
-        const loginResult = await response.text(); // 서버에서 "로그인 가능." 반환
+        const loginResult = await response.text();
 
         if (loginResult.trim() === "로그인 가능.") {
-          // 로그인 성공, 유저 정보 가져오기
           const userResponse = await fetch(
-            `http://192.168.0.74:8000/user/find?email=${encodeURIComponent(id)}`, // 쿼리 파라미터 사용
+            `${baseUrl}/user/find?email=${encodeURIComponent(id)}`,
             {
               method: "GET",
               headers: {
@@ -44,13 +45,13 @@ const LoginScreen = ({ navigation }) => {
             }
           );
           if (userResponse.ok) {
-            const userData = await userResponse.json(); // 유저 정보를 JSON으로 파싱
+            const userData = await userResponse.json();
             if (id === "a@a.com") {
-              userData.role = "admin"; // 특정 아이디일 경우 역할 추가
+              userData.role = "admin";
             } else {
-              userData.role = "user"; // 기본 역할
+              userData.role = "user";
             }
-            setUserInfo(userData); // 유저 정보를 UserContext에 저장
+            setUserInfo(userData);
             Alert.alert(
               "로그인 성공",
               id === "a@a.com"

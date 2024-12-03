@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Alert,
 } from "react-native";
+import { useBaseUrl } from "../../contexts/BaseUrlContext";
 
 const SignUpScreen = ({ navigation }) => {
   const [id, setId] = useState("");
@@ -18,6 +19,8 @@ const SignUpScreen = ({ navigation }) => {
   const [birth, setBirth] = useState("");
   const [address, setAddress] = useState("");
   const [job, setJob] = useState("");
+
+  const baseUrl = useBaseUrl(); // useBaseUrl 훅 호출
 
   const validateForm = () => {
     if (
@@ -44,7 +47,7 @@ const SignUpScreen = ({ navigation }) => {
     if (!validateForm()) return;
 
     try {
-      const response = await fetch("http://10.20.39.17:8000/user", {
+      const response = await fetch(`${baseUrl}/user`, { // baseUrl 사용
         method: "POST",
         headers: {
           "Content-Type": "application/json",

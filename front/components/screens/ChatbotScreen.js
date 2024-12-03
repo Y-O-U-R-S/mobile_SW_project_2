@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   View,
   Text,
@@ -11,11 +11,16 @@ import {
   Platform,
   TouchableWithoutFeedback,
 } from "react-native";
+import { UserContext } from "../../contexts/UserContext";
+import { useBaseUrl } from "../../contexts/BaseUrlContext";
 
 const ChatbotScreen = ({ isVisible, onClose }) => {
   const [messages, setMessages] = useState([]); // 메시지 리스트
   const [inputText, setInputText] = useState(""); // 입력 텍스트
-  const animatedValue = useRef(new Animated.Value(0)).current; // 애니메이션 값
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const flatListRef = useRef();
+  const { userInfo } = useContext(UserContext); // 로그인된 유저 정보 가져오기
+  const baseUrl = useBaseUrl(); // baseUrl을 가져옴
 
   useEffect(() => {
     const keyboardWillShow = Keyboard.addListener(
@@ -33,10 +38,16 @@ const ChatbotScreen = ({ isVisible, onClose }) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (userInfo?.email) {
+      fetchMessages(); // 로그인된 유저 이메일로 메시지를 가져옴
+    }
+  }, [userInfo]);
+
   const handleKeyboardShow = (event) => {
-    const keyboardHeight = event.endCoordinates.height - 110; // 키보드 높이에서 적정 오프셋 값 보정
+    const keyboardHeight = event.endCoordinates.height - 110;
     Animated.timing(animatedValue, {
-      toValue: -keyboardHeight, // 키보드 높이만큼 위로 이동
+      toValue: -keyboardHeight,
       duration: Platform.OS === "ios" ? event.duration : 250,
       useNativeDriver: false,
     }).start();
@@ -44,49 +55,84 @@ const ChatbotScreen = ({ isVisible, onClose }) => {
 
   const handleKeyboardHide = () => {
     Animated.timing(animatedValue, {
-      toValue: 0, // 원래 위치로 복귀
+      toValue: 0,
       duration: 250,
       useNativeDriver: false,
     }).start();
   };
 
+  const fetchMessages = async () => {
+    try {
+      const response = await fetch(
+        `${baseUrl}/chatbot/email/${userInfo.email}`
+      );
+      const data = await response.json();
+      setMessages(data); // 서버에서 가져온 질문/답변 리스트
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
+  };
+
   const sendMessage = async () => {
     if (!inputText.trim()) return;
 
-    const userMessage = { sender: "user", text: inputText };
-    setMessages((prev) => [...prev, userMessage]); // 사용자 메시지 추가
+    const newQuestion = { question: inputText, answer: "" }; // 새로운 질문
+    setMessages((prev) => [...prev, newQuestion]); // 질문 추가
     setInputText("");
 
     try {
-      const response = await fetch("https://your-api-endpoint.com/send", {
+      // 챗봇 서버로 질문 전송
+      const chatbotResponse = await fetch("http://10.20.32.209:5000/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ message: inputText }),
+        body: JSON.stringify({ id: userInfo.email, message: inputText }),
       });
 
-      const data = await response.json();
-      const botReply = { sender: "bot", text: data.reply }; // 봇 응답 추가
-      setMessages((prev) => [...prev, botReply]);
+      const chatbotData = await chatbotResponse.json();
+
+      const newAnswer = chatbotData.response;
+      const updatedMessage = { question: inputText, answer: newAnswer };
+
+      // DB에 질문/답변 저장
+      await fetch(`${baseUrl}/chatbot`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: userInfo.email,
+          question: inputText,
+          answer: newAnswer,
+          date: new Date().toISOString(),
+        }),
+      });
+
+      // UI 업데이트
+      setMessages((prev) =>
+        prev.map((msg, index) =>
+          index === prev.length - 1 ? updatedMessage : msg
+        )
+      );
+      fetchMessages(); // 최신 메시지 가져오기
     } catch (error) {
       console.error("Error:", error);
-      const errorReply = {
-        sender: "bot",
-        text: "오류가 발생했습니다. 다시 시도해주세요.",
-      };
-      setMessages((prev) => [...prev, errorReply]);
     }
   };
 
   const renderMessage = ({ item }) => (
-    <View
-      style={[
-        styles.messageBubble,
-        item.sender === "user" ? styles.userBubble : styles.botBubble,
-      ]}
-    >
-      <Text style={styles.messageText}>{item.text}</Text>
+    <View style={styles.messageContainer}>
+      {/* 질문 */}
+      <View style={[styles.messageBubble, styles.userBubble]}>
+        <Text style={styles.messageText}>{item.question}</Text>
+      </View>
+      {/* 답변 */}
+      {item.answer ? (
+        <View style={[styles.messageBubble, styles.botBubble]}>
+          <Text style={styles.messageText}>{item.answer}</Text>
+        </View>
+      ) : null}
     </View>
   );
 
@@ -98,7 +144,6 @@ const ChatbotScreen = ({ isVisible, onClose }) => {
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.innerContainer}>
-          {/* 대화창 헤더 */}
           <View style={styles.header}>
             <Text style={styles.headerText}>챗봇</Text>
             <TouchableOpacity onPress={onClose}>
@@ -106,23 +151,27 @@ const ChatbotScreen = ({ isVisible, onClose }) => {
             </TouchableOpacity>
           </View>
 
-          {/* 메시지 리스트 */}
           <FlatList
+            ref={flatListRef}
             data={messages}
             keyExtractor={(item, index) => index.toString()}
             renderItem={renderMessage}
             contentContainerStyle={styles.messageList}
-            inverted // 최신 메시지를 아래에서 위로 정렬
+            onContentSizeChange={() =>
+              flatListRef.current?.scrollToEnd({ animated: true })
+            }
+            onLayout={() =>
+              flatListRef.current?.scrollToEnd({ animated: true })
+            }
           />
 
-          {/* 입력창 */}
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
               placeholder="메시지를 입력하세요..."
               value={inputText}
               onChangeText={setInputText}
-              onSubmitEditing={sendMessage} // 엔터키로 메시지 전송
+              onSubmitEditing={sendMessage}
             />
             <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
               <Text style={styles.sendButtonText}>전송</Text>
@@ -170,8 +219,12 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   messageList: {
-    flex: 1,
+    flexGrow: 1,
+    justifyContent: "flex-end",
     padding: 10,
+  },
+  messageContainer: {
+    marginBottom: 10,
   },
   messageBubble: {
     maxWidth: "80%",

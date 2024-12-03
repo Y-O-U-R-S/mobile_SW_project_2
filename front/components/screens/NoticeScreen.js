@@ -14,8 +14,9 @@ import Icon from "react-native-vector-icons/Ionicons";
 
 import Header from "../common/Header";
 import Footer from "../common/StartupFooter";
-import NoticeModal from "../modals/NoticeModal"; // NoticeModal import
-import { UserContext } from "../../contexts/UserContext"; // UserContext import
+import NoticeModal from "../modals/NoticeModal";
+import { UserContext } from "../../contexts/UserContext";
+import { useBaseUrl } from "../../contexts/BaseUrlContext";
 
 const NoticeScreen = () => {
   const [searchText, setSearchText] = useState("");
@@ -29,10 +30,12 @@ const NoticeScreen = () => {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const baseUrl = useBaseUrl(); // baseUrl을 가져오기
+
   useEffect(() => {
     const fetchNotices = async () => {
       try {
-        const response = await fetch("http://192.168.0.74:8000/notice");
+        const response = await fetch(`${baseUrl}/notice`);
         if (!response.ok) {
           throw new Error("Failed to fetch notices");
         }
@@ -46,12 +49,12 @@ const NoticeScreen = () => {
     };
 
     fetchNotices();
-  }, []);
+  }, [baseUrl]);
 
   const handleSubmitNotice = async () => {
     const url = isEditMode
-      ? `http://10.20.39.17:8000/notice/${selectedNotice.id}`
-      : "http://10.20.39.17:8000/notice";
+      ? `${baseUrl}/notice/${selectedNotice.id}`
+      : `${baseUrl}/notice`;
     const method = isEditMode ? "PUT" : "POST";
 
     try {
@@ -111,12 +114,9 @@ const NoticeScreen = () => {
         style: "destructive",
         onPress: async () => {
           try {
-            const response = await fetch(
-              `http://10.20.39.17:8000/notice/${id}`,
-              {
-                method: "DELETE",
-              }
-            );
+            const response = await fetch(`${baseUrl}/notice/${id}`, {
+              method: "DELETE",
+            });
             if (response.ok) {
               setNotices((prevNotices) =>
                 prevNotices.filter((notice) => notice.id !== id)

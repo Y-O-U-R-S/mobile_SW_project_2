@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import Header from "../common/Header";
 import { UserContext } from "../../contexts/UserContext";
+import { useBaseUrl } from "../../contexts/BaseUrlContext";
 
 const EditProfile = ({ navigation }) => {
   const { userInfo, setUserInfo } = useContext(UserContext); // UserContext 사용
@@ -23,6 +24,7 @@ const EditProfile = ({ navigation }) => {
   });
   const [currentPassword, setCurrentPassword] = useState(""); // 현재 비밀번호 입력
   const [showModal, setShowModal] = useState(false);
+  const baseUrl = useBaseUrl(); // baseUrl을 가져옴
 
   const handleInputChange = (field, value) => {
     setFormData((prevData) => ({ ...prevData, [field]: value }));
@@ -37,7 +39,7 @@ const EditProfile = ({ navigation }) => {
     try {
       // 서버에 현재 비밀번호 확인 요청
       const authResponse = await fetch(
-        `http://10.20.39.17:8000/user/login`, // 로그인 인증 요청
+        `${baseUrl}/user/login`, // 로그인 인증 요청
         {
           method: "POST",
           headers: {
@@ -56,21 +58,18 @@ const EditProfile = ({ navigation }) => {
       }
 
       // 비밀번호가 맞다면 프로필 수정 요청
-      const response = await fetch(
-        `http://10.20.39.17:8000/user/${userInfo.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...formData,
-            id: userInfo.id, // ID는 변경되지 않도록
-            birth: userInfo.birth, // 생일은 기존 값 유지
-            address: userInfo.address, // 주소는 기존 값 유지
-          }),
-        }
-      );
+      const response = await fetch(`${baseUrl}/user/${userInfo.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...formData,
+          id: userInfo.id, // ID는 변경되지 않도록
+          birth: userInfo.birth, // 생일은 기존 값 유지
+          address: userInfo.address, // 주소는 기존 값 유지
+        }),
+      });
 
       if (response.ok) {
         const updatedUser = await response.json();

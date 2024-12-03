@@ -8,8 +8,6 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
-  Modal,
-  TextInput,
   Alert,
 } from "react-native";
 import Header from "../common/Header";
@@ -18,12 +16,14 @@ import { useNavigation } from "@react-navigation/native";
 import { launchImageLibrary } from "react-native-image-picker";
 import { UserContext } from "../../contexts/UserContext";
 import RegisterSpaceModal from "../modals/RegisterSpaceModal";
+import { useBaseUrl } from "../../contexts/BaseUrlContext";
 
 const SpaceRentalListScreen = () => {
   const navigation = useNavigation();
   const { userInfo } = useContext(UserContext);
   const [rentalSpaces, setRentalSpaces] = useState([]);
   const [loading, setLoading] = useState(true);
+  const baseUrl = useBaseUrl(); // useBaseUrl 호출하여 baseUrl 가져오기
 
   // 모달 상태 및 입력 데이터
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -41,7 +41,7 @@ const SpaceRentalListScreen = () => {
   useEffect(() => {
     const fetchRentalSpaces = async () => {
       try {
-        const response = await fetch("http://192.168.0.74:8000/rentalSpaces");
+        const response = await fetch(`${baseUrl}/rentalSpaces`); // baseUrl 사용
         if (!response.ok) {
           throw new Error("Failed to fetch rental spaces");
         }
@@ -55,7 +55,7 @@ const SpaceRentalListScreen = () => {
     };
 
     fetchRentalSpaces();
-  }, []);
+  }, [baseUrl]);
 
   const handleInputChange = (field, value) => {
     setFormData((prevData) => ({ ...prevData, [field]: value }));
@@ -107,7 +107,8 @@ const SpaceRentalListScreen = () => {
     });
 
     try {
-      const response = await fetch("http://10.20.39.17:8000/rentalSpaces", {
+      const response = await fetch(`${baseUrl}/rentalSpaces`, {
+        // baseUrl 사용
         method: "POST",
         body: formDataToSend,
         headers: {
