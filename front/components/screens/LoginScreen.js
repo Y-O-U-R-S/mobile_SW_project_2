@@ -7,14 +7,15 @@ import {
   StyleSheet,
   Alert,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient"; // 배경 그라데이션 추가
 import { UserContext } from "../../contexts/UserContext";
-import { useBaseUrl } from "../../contexts/BaseUrlContext"; // useBaseUrl로 수정
+import { useBaseUrl } from "../../contexts/BaseUrlContext";
 
 const LoginScreen = ({ navigation }) => {
   const [id, setId] = useState("");
   const [password, setPassword] = useState("");
   const { setUserInfo } = useContext(UserContext);
-  const baseUrl = useBaseUrl(); // baseUrl을 가져옴
+  const baseUrl = useBaseUrl();
 
   const handleLogin = async () => {
     if (!id || !password) {
@@ -33,7 +34,6 @@ const LoginScreen = ({ navigation }) => {
 
       if (response.ok) {
         const loginResult = await response.text();
-
         if (loginResult.trim() === "로그인 가능.") {
           const userResponse = await fetch(
             `${baseUrl}/user/find?email=${encodeURIComponent(id)}`,
@@ -81,31 +81,49 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient colors={["#FFAF3E", "#FF6B6B"]} style={styles.container}>
+      <Text style={styles.subtitle}>
+        <Text style={styles.highlight}>청</Text>
+        년들의 <Text style={styles.highlight}>창</Text>업 순간을{" "}
+        <Text style={styles.highlight}>가</Text>
+        능하게 하는 <Text style={styles.highlight}>련</Text>
+        습장
+      </Text>
       <Text style={styles.title}>청순가련</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="ID"
-        value={id}
-        onChangeText={setId}
-        autoCapitalize="none"
-        placeholderTextColor="#aaa"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        placeholderTextColor="#aaa"
-      />
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>LOGIN</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate("SignUp")}>
-        <Text style={styles.linkText}>회원가입</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>아이디</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your ID"
+          value={id}
+          onChangeText={setId}
+          autoCapitalize="none"
+          placeholderTextColor="#ffffff99"
+        />
+      </View>
+      <View style={styles.inputContainer}>
+        <Text style={styles.inputLabel}>비밀번호</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          placeholderTextColor="#ffffff99"
+        />
+      </View>
+      <View style={styles.loginContainer}>
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginButtonText}>로그인</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.signupButton}
+          onPress={() => navigation.navigate("SignUp")}
+        >
+          <Text style={styles.signupButtonText}>회원가입</Text>
+        </TouchableOpacity>
+      </View>
+    </LinearGradient>
   );
 };
 
@@ -114,42 +132,81 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FF6B6B",
     padding: 20,
   },
+  subtitle: {
+    fontSize: 14,
+    color: "#FF6B6B",
+    marginBottom: 10,
+    textAlign: "center",
+    textShadowColor: "#000",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1,
+  },
+  highlight: {
+    fontSize: 16,
+    color: "#fff",
+    fontWeight: "bold",
+    textShadowColor: "#000", // 테두리 색상
+    textShadowOffset: { width: 1, height: 1 }, // 테두리 두께
+    textShadowRadius: 1, // 테두리 흐림 효과
+  },
   title: {
-    fontSize: 30,
+    fontSize: 40,
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 40,
+    textShadowColor: "#000", // 테두리 색상
+    textShadowOffset: { width: 1, height: 1 }, // 테두리 두께
+    textShadowRadius: 2, // 테두리 흐림 효과
+  },
+  inputContainer: {
+    width: "80%",
+    marginBottom: 15,
+  },
+  inputLabel: {
+    fontSize: 14,
+    color: "#fff",
+    marginBottom: 5,
   },
   input: {
-    width: "80%",
+    width: "100%",
     height: 50,
-    borderColor: "#fff",
-    borderWidth: 1,
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    marginBottom: 15,
-    color: "#fff",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    paddingHorizontal: 15,
+    fontSize: 16,
   },
-  button: {
-    backgroundColor: "#FFCC00",
+  loginContainer: {
     width: "80%",
+    position: "relative",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  loginButton: {
+    backgroundColor: "#FFCC00",
+    width: "100%",
     height: 50,
-    borderRadius: 25,
+    borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: 10,
   },
-  buttonText: {
-    color: "#000",
-    fontSize: 18,
+  loginButtonText: {
+    fontSize: 23,
     fontWeight: "bold",
+    color: "#000",
   },
-  linkText: {
-    color: "#fff",
-    marginTop: 10,
+  signupButton: {
+    position: "absolute",
+    right: -10,
+    bottom: -30,
+    width: 80,
+    alignItems: "center",
+  },
+  signupButtonText: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#ffffff99",
     textDecorationLine: "underline",
   },
 });

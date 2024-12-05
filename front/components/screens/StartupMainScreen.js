@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   SafeAreaView,
+  Linking,
 } from "react-native";
 import { UserContext } from "../../contexts/UserContext";
 import Header from "../common/Header";
@@ -14,66 +15,86 @@ import Footer from "../common/StartupFooter";
 import ChatbotScreen from "./ChatbotScreen";
 
 const MainScreen = () => {
-  const { userInfo } = useContext(UserContext); // 로그인한 유저 정보 가져오기
-  const [isChatOpen, setIsChatOpen] = useState(false); // 챗봇 열기 상태
+  const { userInfo } = useContext(UserContext);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  const handleImagePress = () => {
+    Linking.openURL(
+      "https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?mi=40005&cntntsId=238883"
+    ).catch((err) => console.error("Error opening URL: ", err));
+  };
+  const handleImagePress2 = () => {
+    Linking.openURL(
+      "https://help.3o3.co.kr/hc/ko/articles/29099090200985-2024-%EC%97%AC%EC%84%B1%EC%B0%BD%EC%97%85-%EC%A7%80%EC%9B%90%EA%B8%88-%EC%A0%9C%EB%8F%84-3%EA%B0%80%EC%A7%80-%EC%97%AC%EC%84%B1%EA%B0%80%EC%9E%A5-%EC%B0%BD%EC%97%85-%EC%A7%80%EC%9B%90%EA%B8%88-%EB%93%B1"
+    ).catch((err) => console.error("Error opening URL: ", err));
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="청순가련" style={styles.header} />
+      <Header title="청순가련" backButton={false} style={styles.header} />
 
       <ScrollView contentContainerStyle={styles.contentContainer}>
-        <View style={styles.titleSection}>
-          <Text style={styles.title}>2024 여성 창업자 지원 제도 3가지</Text>
-        </View>
+        <TouchableOpacity onPress={handleImagePress2}>
+          <View style={styles.titleSection}>
+            <Image
+              source={{
+                uri: "https://yoursyhs3bucket.s3.ap-northeast-2.amazonaws.com/490f724a-aqweqweqweqweasdzxc.png",
+              }}
+              style={styles.titleImage}
+            />
+          </View>
+        </TouchableOpacity>
 
         <View style={styles.infoSection}>
           <Text style={styles.infoTitle}>예비 창업자 공간</Text>
           <View style={styles.infoBox}>
             <Text style={styles.infoSubTitle}>
-              {userInfo?.name} 님, 이런 정보 어떠세요?
+              {userInfo?.name} 님, 창업에 필요한 정보를 모아봤어요!
             </Text>
             <View style={styles.infoList}>
-              <Text style={styles.infoItem}>- 창업 절차</Text>
-              <Text style={styles.infoItem}>- 창업 필요 서류</Text>
-              <Text style={styles.infoItem}>- 사업자 등록 전 체크 사항</Text>
-              <Text style={styles.infoItem}>- 창업 지원 제도</Text>
+              <Text style={styles.infoItem}>
+                1. 창업 아이템 시장 조사를 철저히 하세요.
+              </Text>
+              <Text style={styles.infoItem}>
+                2. 창업 서류는 미리 준비하세요.
+              </Text>
+              <Text style={styles.infoItem}>
+                3. 사업자 등록 전 세금 사항을 확인하세요.
+              </Text>
+              <Text style={styles.infoItem}>
+                4. 창업 지원 제도를 활용하세요.
+              </Text>
+              <Text style={styles.infoItem}>
+                5. 창업 자금을 체계적으로 관리하세요.
+              </Text>
             </View>
-            <Image
-              source={{
-                uri: "https://cataas.com/cat", // 임시 이미지 URL
-              }}
-              style={styles.infoImage}
-            />
           </View>
         </View>
-
-        {/* Advertisement Section */}
-        <View style={styles.advertisement}>
-          <Image
-            source={{
-              uri: "https://cataas.com/cat", // 임시 광고 이미지 URL
-            }}
-            style={styles.adImage}
-          />
-        </View>
+        <TouchableOpacity onPress={handleImagePress}>
+          <View style={styles.advertisement}>
+            <Image
+              source={{
+                uri: "https://yoursyhs3bucket.s3.ap-northeast-2.amazonaws.com/5041395e-9image.png",
+              }}
+              style={styles.adImage}
+            />
+          </View>
+        </TouchableOpacity>
       </ScrollView>
 
-      {/* Footer */}
       <Footer />
 
-      {/* Chatbot Button */}
       <TouchableOpacity
         style={styles.chatButton}
-        onPress={() => setIsChatOpen(true)} // 챗봇 열기
+        onPress={() => setIsChatOpen(true)}
       >
         <Text style={styles.chatButtonText}>💬</Text>
       </TouchableOpacity>
 
-      {/* Chatbot Screen */}
       {isChatOpen && (
         <ChatbotScreen
-          isVisible={isChatOpen} // 챗봇 상태 전달
-          onClose={() => setIsChatOpen(false)} // 닫기 핸들러
+          isVisible={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
         />
       )}
     </SafeAreaView>
@@ -99,24 +120,17 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignItems: "center",
   },
-  title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    textAlign: "center",
+  titleImage: {
+    width: "100%",
+    height: 100,
+    resizeMode: "contain",
   },
-  subTitle: {
-    fontSize: 14,
-    color: "#888",
-    textAlign: "center",
-    marginTop: 5,
-  },
-  infoSection: {
-    marginVertical: 15,
-  },
+  infoSection: {},
   infoTitle: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
+    color: "#FF6B6B",
   },
   infoBox: {
     borderWidth: 1,
@@ -135,15 +149,14 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   infoItem: {
-    fontSize: 14,
+    fontSize: 16,
     color: "#333",
-    marginBottom: 5,
-  },
-  infoImage: {
-    width: "100%",
-    height: 150,
-    resizeMode: "contain",
-    marginTop: 10,
+    marginBottom: 10,
+    lineHeight: 24,
+    fontWeight: "500",
+    paddingLeft: 10,
+    borderLeftWidth: 3,
+    borderColor: "#FF6B6B",
   },
   advertisement: {
     marginTop: 20,
@@ -151,7 +164,7 @@ const styles = StyleSheet.create({
   },
   adImage: {
     width: "100%",
-    height: 100,
+    height: 180,
     resizeMode: "contain",
   },
   chatButton: {

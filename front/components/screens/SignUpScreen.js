@@ -20,7 +20,7 @@ const SignUpScreen = ({ navigation }) => {
   const [address, setAddress] = useState("");
   const [job, setJob] = useState("");
 
-  const baseUrl = useBaseUrl(); // useBaseUrl 훅 호출
+  const baseUrl = useBaseUrl();
 
   const validateForm = () => {
     if (
@@ -47,7 +47,7 @@ const SignUpScreen = ({ navigation }) => {
     if (!validateForm()) return;
 
     try {
-      const response = await fetch(`${baseUrl}/user`, { // baseUrl 사용
+      const response = await fetch(`${baseUrl}/user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -56,7 +56,7 @@ const SignUpScreen = ({ navigation }) => {
           id,
           password,
           name,
-          email: id, // 이메일과 아이디를 동일하게 설정
+          email: id,
           phone,
           birth,
           address,
@@ -98,7 +98,6 @@ const SignUpScreen = ({ navigation }) => {
           value={id}
           onChangeText={setId}
           keyboardType="email-address"
-          autoCapitalize="none"
         />
         <TextInput
           style={styles.input}

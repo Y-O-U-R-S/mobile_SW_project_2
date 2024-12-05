@@ -30,24 +30,25 @@ const NoticeScreen = () => {
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const baseUrl = useBaseUrl(); // baseUrl을 가져오기
+  const baseUrl = useBaseUrl();
+
+  const fetchNotices = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${baseUrl}/notice`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch notices");
+      }
+      const data = await response.json();
+      setNotices(data);
+    } catch (error) {
+      console.error("Error fetching notices:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchNotices = async () => {
-      try {
-        const response = await fetch(`${baseUrl}/notice`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch notices");
-        }
-        const data = await response.json();
-        setNotices(data);
-      } catch (error) {
-        console.error("Error fetching notices:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchNotices();
   }, [baseUrl]);
 
@@ -85,11 +86,7 @@ const NoticeScreen = () => {
             ? "공지사항이 수정되었습니다."
             : "공지사항이 등록되었습니다."
         );
-        setModalVisible(false);
-        setQuestionTitle("");
-        setQuestionContent("");
-        setSelectedNotice(null);
-        setEditMode(false);
+        resetModal();
       } else {
         Alert.alert("오류", "공지사항 등록/수정에 실패했습니다.");
       }
@@ -123,7 +120,8 @@ const NoticeScreen = () => {
               );
               Alert.alert("성공", "공지사항이 삭제되었습니다.");
             } else {
-              Alert.alert("오류", "공지사항 삭제에 실패했습니다.");
+              const errorText = await response.text();
+              Alert.alert("오류", errorText || "공지사항 삭제에 실패했습니다.");
             }
           } catch (error) {
             console.error("Error deleting notice:", error);
@@ -131,6 +129,14 @@ const NoticeScreen = () => {
         },
       },
     ]);
+  };
+
+  const resetModal = () => {
+    setModalVisible(false);
+    setEditMode(false);
+    setQuestionTitle("");
+    setQuestionContent("");
+    setSelectedNotice(null);
   };
 
   const QnAItem = ({ notice }) => {
@@ -155,15 +161,17 @@ const NoticeScreen = () => {
             {userInfo?.role === "admin" && (
               <View style={styles.actionButtons}>
                 <TouchableOpacity
-                  style={styles.editButton}
+                  style={[styles.actionButton, styles.editButton]}
                   onPress={() => handleEditNotice(notice)}
                 >
+                  <Icon name="create-outline" size={16} color="#fff" />
                   <Text style={styles.actionButtonText}>수정</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.deleteButton}
+                  style={[styles.actionButton, styles.deleteButton]}
                   onPress={() => handleDeleteNotice(notice.id)}
                 >
+                  <Icon name="trash-outline" size={16} color="#fff" />
                   <Text style={styles.actionButtonText}>삭제</Text>
                 </TouchableOpacity>
               </View>
@@ -177,17 +185,6 @@ const NoticeScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <Header title="공지사항" />
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="제목 검색"
-          value={searchText}
-          onChangeText={setSearchText}
-        />
-        <TouchableOpacity style={styles.searchButton}>
-          <Text style={styles.searchButtonText}>검색</Text>
-        </TouchableOpacity>
-      </View>
 
       <ScrollView style={styles.qnaList}>
         {loading ? (
@@ -211,12 +208,7 @@ const NoticeScreen = () => {
 
       <NoticeModal
         visible={isModalVisible}
-        onClose={() => {
-          setModalVisible(false);
-          setEditMode(false);
-          setQuestionTitle("");
-          setQuestionContent("");
-        }}
+        onClose={resetModal}
         onSubmit={handleSubmitNotice}
         isEditMode={isEditMode}
         title={questionTitle}
@@ -261,25 +253,59 @@ const styles = StyleSheet.create({
   qnaItem: {
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
+    marginBottom: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: "#FAFAFA",
+    borderRadius: 8,
   },
   questionRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: 16,
   },
   questionText: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight: "600",
   },
   answerContainer: {
-    padding: 16,
-    backgroundColor: "#f9f9f9",
+    marginTop: 10,
+    padding: 12,
+    backgroundColor: "#F9F9F9",
+    borderRadius: 8,
   },
   answerText: {
     fontSize: 14,
-    color: "#666",
+    color: "#555",
     lineHeight: 20,
+    marginBottom: 10,
+  },
+  actionButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  actionButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    flex: 1,
+    marginHorizontal: 4,
+  },
+  editButton: {
+    backgroundColor: "#4CAF50",
+  },
+  deleteButton: {
+    backgroundColor: "#F44336",
+  },
+  actionButtonText: {
+    color: "#fff",
+    marginLeft: 4,
+    fontSize: 14,
+    fontWeight: "600",
   },
   writeButton: {
     position: "absolute",

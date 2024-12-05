@@ -13,7 +13,13 @@ import { UserContext } from "../../contexts/UserContext";
 
 const MyPageScreen = () => {
   const navigation = useNavigation();
-  const { userInfo } = useContext(UserContext); // UserContext에서 로그인 정보 가져오기
+  const { userInfo, setUserInfo } = useContext(UserContext); // UserContext에서 로그인 정보와 setUserInfo 가져오기
+
+  // 로그아웃 처리 함수
+  const handleLogout = () => {
+    setUserInfo(null); // userInfo를 null로 설정하여 로그인 상태를 초기화
+    navigation.navigate("Login"); // 로그아웃 후 로그인 화면으로 이동
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -41,19 +47,12 @@ const MyPageScreen = () => {
           >
             <Text style={styles.menuText}>공지사항 / 이벤트</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuText}>팝업스토어에 제보하기</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
-            <Text style={styles.menuText}>팝업스토어에 홍보하기</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate("QnA")}
-          >
-            <Text style={styles.menuText}>QnA</Text>
-          </TouchableOpacity>
         </View>
+
+        {/* 로그아웃 버튼 */}
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>로그아웃</Text>
+        </TouchableOpacity>
       </View>
       <Footer />
     </SafeAreaView>
@@ -118,6 +117,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#333",
     fontWeight: "500",
+  },
+  logoutButton: {
+    marginTop: 30,
+    paddingVertical: 12,
+    backgroundColor: "#FF6B6B",
+    borderRadius: 25,
+    alignItems: "center",
+  },
+  logoutButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

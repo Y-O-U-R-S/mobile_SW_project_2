@@ -15,21 +15,26 @@ import { UserContext } from "../../contexts/UserContext";
 import { useBaseUrl } from "../../contexts/BaseUrlContext";
 
 const ChatbotScreen = ({ isVisible, onClose }) => {
-  const [messages, setMessages] = useState([]); // 메시지 리스트
-  const [inputText, setInputText] = useState(""); // 입력 텍스트
+  const [messages, setMessages] = useState([]);
+  const [inputText, setInputText] = useState("");
+  const [loading, setLoading] = useState(false);
   const animatedValue = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef();
-  const { userInfo } = useContext(UserContext); // 로그인된 유저 정보 가져오기
-  const baseUrl = useBaseUrl(); // baseUrl을 가져옴
+  const { userInfo } = useContext(UserContext);
+  const baseUrl = useBaseUrl();
 
   useEffect(() => {
     const keyboardWillShow = Keyboard.addListener(
       Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-      (event) => handleKeyboardShow(event)
+      (event) => {
+        handleKeyboardShow(event);
+      }
     );
     const keyboardWillHide = Keyboard.addListener(
       Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-      handleKeyboardHide
+      () => {
+        handleKeyboardHide();
+      }
     );
 
     return () => {
@@ -39,10 +44,10 @@ const ChatbotScreen = ({ isVisible, onClose }) => {
   }, []);
 
   useEffect(() => {
-    if (userInfo?.email) {
-      fetchMessages(); // 로그인된 유저 이메일로 메시지를 가져옴
+    if (isVisible && userInfo?.email) {
+      fetchMessages();
     }
-  }, [userInfo]);
+  }, [isVisible]);
 
   const handleKeyboardShow = (event) => {
     const keyboardHeight = event.endCoordinates.height - 110;
@@ -66,23 +71,38 @@ const ChatbotScreen = ({ isVisible, onClose }) => {
       const response = await fetch(
         `${baseUrl}/chatbot/email/${userInfo.email}`
       );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          setMessages([{ question: "대화를 시작해보세요!", answer: "" }]);
+          return;
+        }
+        throw new Error(`Failed to fetch messages: ${response.statusText}`);
+      }
+
       const data = await response.json();
-      setMessages(data); // 서버에서 가져온 질문/답변 리스트
+
+      if (data.length === 0) {
+        setMessages([{ question: "대화를 시작해보세요!", answer: "" }]);
+      } else {
+        setMessages(data);
+      }
     } catch (error) {
-      console.error("Error fetching messages:", error);
+      console.error("Error fetching messages:", error.message);
     }
   };
-
   const sendMessage = async () => {
     if (!inputText.trim()) return;
+    if (messages[0]?.question === "대화를 시작해보세요!") {
+      setMessages((prev) => prev.slice(1));
+    }
 
-    const newQuestion = { question: inputText, answer: "" }; // 새로운 질문
-    setMessages((prev) => [...prev, newQuestion]); // 질문 추가
+    const newQuestion = { question: inputText, answer: "" };
+    setMessages((prev) => [...prev, newQuestion]);
     setInputText("");
-
+    setLoading(true);
     try {
-      // 챗봇 서버로 질문 전송
-      const chatbotResponse = await fetch("http://10.20.32.209:5000/chat", {
+      const chatbotResponse = await fetch("http:/192.168.10.15:5000/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -91,12 +111,15 @@ const ChatbotScreen = ({ isVisible, onClose }) => {
       });
 
       const chatbotData = await chatbotResponse.json();
-
       const newAnswer = chatbotData.response;
-      const updatedMessage = { question: inputText, answer: newAnswer };
 
-      // DB에 질문/답변 저장
-      await fetch(`${baseUrl}/chatbot`, {
+      setMessages((prev) =>
+        prev.map((msg, index) =>
+          index === prev.length - 1 ? { ...msg, answer: newAnswer } : msg
+        )
+      );
+
+      await fetch(`${baseUrl}/chatbot/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -108,33 +131,65 @@ const ChatbotScreen = ({ isVisible, onClose }) => {
           date: new Date().toISOString(),
         }),
       });
-
-      // UI 업데이트
-      setMessages((prev) =>
-        prev.map((msg, index) =>
-          index === prev.length - 1 ? updatedMessage : msg
-        )
-      );
-      fetchMessages(); // 최신 메시지 가져오기
     } catch (error) {
       console.error("Error:", error);
+
+      const errorAnswer =
+        error.message === "timeout"
+          ? "챗봇 서버가 응답하지 않습니다. 잠시 후 다시 시도해주세요."
+          : "서버 오류입니다. 관리자에게 문의하세요.";
+
+      setMessages((prev) =>
+        prev.map((msg, index) =>
+          index === prev.length - 1 ? { ...msg, answer: errorAnswer } : msg
+        )
+      );
+
+      await fetch(`${baseUrl}/chatbot/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: userInfo.email,
+          question: inputText,
+          answer: errorAnswer,
+          date: new Date().toISOString(),
+        }),
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   const renderMessage = ({ item }) => (
     <View style={styles.messageContainer}>
-      {/* 질문 */}
       <View style={[styles.messageBubble, styles.userBubble]}>
         <Text style={styles.messageText}>{item.question}</Text>
       </View>
-      {/* 답변 */}
       {item.answer ? (
         <View style={[styles.messageBubble, styles.botBubble]}>
           <Text style={styles.messageText}>{item.answer}</Text>
         </View>
+      ) : loading && item.question === inputText ? (
+        <View style={[styles.messageBubble, styles.botBubble]}>
+          <Text style={styles.messageText}>로딩 중...</Text>
+        </View>
       ) : null}
     </View>
   );
+
+  const handleScrollToEnd = () => {
+    setTimeout(() => {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  };
+
+  useEffect(() => {
+    if (isVisible) {
+      handleScrollToEnd();
+    }
+  }, [messages, isVisible]);
 
   if (!isVisible) return null;
 
@@ -145,7 +200,7 @@ const ChatbotScreen = ({ isVisible, onClose }) => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.innerContainer}>
           <View style={styles.header}>
-            <Text style={styles.headerText}>챗봇</Text>
+            <Text style={styles.headerText}>청순가련 챗봇이</Text>
             <TouchableOpacity onPress={onClose}>
               <Text style={styles.closeButtonText}>×</Text>
             </TouchableOpacity>
@@ -157,12 +212,9 @@ const ChatbotScreen = ({ isVisible, onClose }) => {
             keyExtractor={(item, index) => index.toString()}
             renderItem={renderMessage}
             contentContainerStyle={styles.messageList}
-            onContentSizeChange={() =>
-              flatListRef.current?.scrollToEnd({ animated: true })
-            }
-            onLayout={() =>
-              flatListRef.current?.scrollToEnd({ animated: true })
-            }
+            scrollEnabled={true}
+            onContentSizeChange={handleScrollToEnd}
+            onLayout={handleScrollToEnd}
           />
 
           <View style={styles.inputContainer}>
@@ -206,7 +258,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#007AFF",
+    backgroundColor: "#FF8A63",
     padding: 10,
   },
   headerText: {
@@ -247,7 +299,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderTopWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#FF8A63",
     padding: 10,
     backgroundColor: "#fff",
   },
@@ -261,7 +313,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   sendButton: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#FF8A63",
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 20,

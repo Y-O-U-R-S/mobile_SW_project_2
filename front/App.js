@@ -12,7 +12,6 @@ import ChatbotScreen from "./components/screens/ChatbotScreen";
 import SpaceRentalListScreen from "./components/screens/StartupSpaceRentalListScreen";
 import StartupMyPageScreen from "./components/screens/StartupMyPageScreen";
 import NoticeScreen from "./components/screens/NoticeScreen";
-import QnAScreen from "./components/screens/QnAScreen";
 import EditProfile from "./components/screens/EditProfile";
 import { UserProvider } from "./contexts/UserContext";
 import { BaseUrlProvider } from "./contexts/BaseUrlContext";
@@ -34,6 +33,7 @@ export default function App() {
               }}
             >
               <Stack.Screen name="StartupMain" component={StartupMainScreen} />
+
               <Stack.Screen name="Login" component={LoginScreen} />
               <Stack.Screen name="SignUp" component={SignUpScreen} />
               <Stack.Screen
@@ -54,7 +54,6 @@ export default function App() {
                 component={StartupMyPageScreen}
               />
               <Stack.Screen name="Notice" component={NoticeScreen} />
-              <Stack.Screen name="QnA" component={QnAScreen} />
               <Stack.Screen name="EditProfile" component={EditProfile} />
             </Stack.Navigator>
           </NavigationContainer>

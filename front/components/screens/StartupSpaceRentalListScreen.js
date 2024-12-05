@@ -17,6 +17,7 @@ import { launchImageLibrary } from "react-native-image-picker";
 import { UserContext } from "../../contexts/UserContext";
 import RegisterSpaceModal from "../modals/RegisterSpaceModal";
 import { useBaseUrl } from "../../contexts/BaseUrlContext";
+import ChatbotScreen from "./ChatbotScreen";
 
 const SpaceRentalListScreen = () => {
   const navigation = useNavigation();
@@ -170,7 +171,6 @@ const SpaceRentalListScreen = () => {
           <Text style={styles.noData}>등록된 공간이 없습니다.</Text>
         )}
       </ScrollView>
-
       {userInfo?.role === "admin" && (
         <TouchableOpacity
           style={styles.addButton}
@@ -179,15 +179,27 @@ const SpaceRentalListScreen = () => {
           <Text style={styles.addButtonText}>공간 등록</Text>
         </TouchableOpacity>
       )}
-
       <RegisterSpaceModal
         visible={isModalVisible}
         onClose={() => setIsModalVisible(false)}
         formData={formData}
         handleInputChange={handleInputChange}
-        handleSelectImage={handleSelectImage}
-        handleRegisterSpace={handleRegisterSpace}
+        fetchRentalSpaces={async () => {
+          try {
+            const response = await fetch(`${baseUrl}/rentalSpaces`); // baseUrl 사용
+            if (!response.ok) {
+              throw new Error("Failed to fetch rental spaces");
+            }
+            const data = await response.json();
+            setRentalSpaces(data);
+          } catch (error) {
+            console.error("Error fetching rental spaces:", error);
+          } finally {
+            setLoading(false);
+          }
+        }} // 새로고침 함수 전달
       />
+      <ChatbotScreen />
       <Footer />
     </SafeAreaView>
   );
@@ -197,13 +209,19 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#fff" },
   container: { marginTop: 10, paddingHorizontal: 20 },
   addButton: {
+    position: "absolute",
+    bottom: 120,
+    right: 20,
     backgroundColor: "#FF6B6B",
+    borderRadius: 50,
     padding: 15,
-    margin: 20,
-    borderRadius: 10,
-    alignItems: "center",
+    elevation: 5, // 그림자 효과
   },
-  addButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  addButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+  },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
@@ -240,14 +258,6 @@ const styles = StyleSheet.create({
   saveButtonText: { color: "#fff", textAlign: "center" },
   cancelButton: { marginTop: 10 },
   cancelButtonText: { textAlign: "center", color: "#FF6B6B" },
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  container: {
-    marginTop: 10,
-    paddingHorizontal: 20,
-  },
   card: {
     backgroundColor: "#FFF8F0",
     borderRadius: 15,
@@ -282,18 +292,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
     color: "#888",
-  },
-  addButton: {
-    backgroundColor: "#FF6B6B",
-    padding: 15,
-    margin: 20,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  addButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
   },
 });
 

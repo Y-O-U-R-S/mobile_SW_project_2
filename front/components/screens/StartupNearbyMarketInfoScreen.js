@@ -14,6 +14,8 @@ import { useNavigation } from "@react-navigation/native";
 import Header from "../common/Header";
 import Footer from "../common/StartupFooter";
 import { useBaseUrl } from "../../contexts/BaseUrlContext";
+import { LineChart } from "react-native-chart-kit";
+import PagerView from "react-native-pager-view"; // PagerView를 올바르게 import
 
 const StartupNearbyMarketInfoScreen = () => {
   const [coordinates, setCoordinates] = useState([]);
@@ -93,6 +95,63 @@ const StartupNearbyMarketInfoScreen = () => {
     }
   }, [coordinates]);
 
+  const graphData = [
+    {
+      title: "임대 공간 가격 변화",
+      labels: ["1월", "2월", "3월", "4월", "5월", "6월"],
+      datasets: [{ data: [300, 450, 320, 400, 500, 600] }],
+    },
+    {
+      title: "사용 빈도 변화",
+      labels: ["1월", "2월", "3월", "4월", "5월", "6월"],
+      datasets: [{ data: [200, 300, 250, 310, 400, 450] }],
+    },
+    {
+      title: "매출 성장률",
+      labels: ["1월", "2월", "3월", "4월", "5월", "6월"],
+      datasets: [{ data: [10, 20, 15, 25, 30, 35] }],
+    },
+  ];
+
+  const renderGraph = ({ item }) => (
+    <View style={styles.graphContainer}>
+      <Text style={styles.graphTitle}>{item.title}</Text>
+      <LineChart
+        data={{
+          labels: item.labels,
+          datasets: item.datasets,
+        }}
+        width={Dimensions.get("window").width} // 100% 화면 너비
+        height={170} // 고정 높이로 설정
+        yAxisLabel="₩"
+        yAxisSuffix="k"
+        chartConfig={{
+          backgroundColor: "#e26a00",
+          backgroundGradientFrom: "#fb8c00",
+          backgroundGradientTo: "#ffa726",
+          decimalPlaces: 1,
+          color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+          labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+          style: {
+            borderRadius: 16,
+            paddingBottom: 20, // 아래쪽에 여백을 추가하여 라벨이 잘리지 않도록 설정
+          },
+          propsForDots: {
+            r: "6",
+            strokeWidth: "2",
+            stroke: "#ffa726",
+          },
+        }}
+        bezier
+        style={{
+          marginVertical: 8,
+          borderRadius: 16,
+          marginBottom: 20, // 아래쪽에 충분한 여백을 추가하여 라벨이 보이도록 함
+        }}
+      />
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <Header title="지도" />
@@ -144,6 +203,17 @@ const StartupNearbyMarketInfoScreen = () => {
           ))}
         </MapView>
       </View>
+
+      <View style={styles.graphContainer}>
+        <PagerView style={styles.pagerView} initialPage={0}>
+          {graphData.map((graph, index) => (
+            <View key={index} style={styles.page}>
+              {renderGraph({ item: graph })}
+            </View>
+          ))}
+        </PagerView>
+      </View>
+
       <Footer />
     </SafeAreaView>
   );
@@ -160,7 +230,7 @@ const styles = StyleSheet.create({
   },
   map: {
     width: Dimensions.get("window").width,
-    height: Dimensions.get("window").height,
+    height: Dimensions.get("window").height * 0.5, // 맵의 높이를 절반으로 설정
   },
   markerContainer: {
     alignItems: "center",
@@ -201,6 +271,25 @@ const styles = StyleSheet.create({
   calloutDescription: {
     fontSize: 12,
     color: "#333",
+  },
+  graphContainer: {
+    flex: 1,
+    marginBottom: -150, // 푸터와의 공간을 확보하기 위한 여백 추가
+  },
+  pagerView: {
+    flex: 1,
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  page: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  graphTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
   },
 });
 
