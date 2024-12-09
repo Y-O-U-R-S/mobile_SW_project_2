@@ -20,6 +20,7 @@ import { useBaseUrl } from "../../contexts/BaseUrlContext";
 
 const NoticeScreen = () => {
   const [searchText, setSearchText] = useState("");
+  const [filteredNotices, setFilteredNotices] = useState([]); // 검색된 공지사항
   const [isModalVisible, setModalVisible] = useState(false);
   const [isEditMode, setEditMode] = useState(false);
   const [questionTitle, setQuestionTitle] = useState("");
@@ -41,6 +42,7 @@ const NoticeScreen = () => {
       }
       const data = await response.json();
       setNotices(data);
+      setFilteredNotices(data); // 초기 공지사항 표시
     } catch (error) {
       console.error("Error fetching notices:", error);
     } finally {
@@ -51,6 +53,13 @@ const NoticeScreen = () => {
   useEffect(() => {
     fetchNotices();
   }, [baseUrl]);
+
+  const handleSearch = () => {
+    const filtered = notices.filter((notice) =>
+      notice.title.toLowerCase().includes(searchText.toLowerCase())
+    );
+    setFilteredNotices(filtered);
+  };
 
   const handleSubmitNotice = async () => {
     const url = isEditMode
@@ -79,6 +88,13 @@ const NoticeScreen = () => {
                 notice.id === updatedNotice.id ? updatedNotice : notice
               )
             : [updatedNotice, ...prevNotices]
+        );
+        setFilteredNotices((prevFiltered) =>
+          isEditMode
+            ? prevFiltered.map((notice) =>
+                notice.id === updatedNotice.id ? updatedNotice : notice
+              )
+            : [updatedNotice, ...prevFiltered]
         );
         Alert.alert(
           "성공",
@@ -117,6 +133,9 @@ const NoticeScreen = () => {
             if (response.ok) {
               setNotices((prevNotices) =>
                 prevNotices.filter((notice) => notice.id !== id)
+              );
+              setFilteredNotices((prevFiltered) =>
+                prevFiltered.filter((notice) => notice.id !== id)
               );
               Alert.alert("성공", "공지사항이 삭제되었습니다.");
             } else {
@@ -184,15 +203,30 @@ const NoticeScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header title="공지사항" />
+      <Header title="공지사항" backButton={true} />
+
+      {/* 검색 기능 추가 */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="제목 검색"
+          value={searchText}
+          onChangeText={setSearchText}
+        />
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+          <Text style={styles.searchButtonText}>검색</Text>
+        </TouchableOpacity>
+      </View>
 
       <ScrollView style={styles.qnaList}>
         {loading ? (
           <ActivityIndicator size="large" color="#FF00FF" />
-        ) : notices.length > 0 ? (
-          notices.map((notice) => <QnAItem key={notice.id} notice={notice} />)
+        ) : filteredNotices.length > 0 ? (
+          filteredNotices.map((notice) => (
+            <QnAItem key={notice.id} notice={notice} />
+          ))
         ) : (
-          <Text style={styles.noData}>등록된 공지사항이 없습니다.</Text>
+          <Text style={styles.noData}>검색 결과가 없습니다.</Text>
         )}
       </ScrollView>
 
@@ -227,37 +261,42 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   searchContainer: {
-    padding: 16,
-    gap: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    marginTop: 10,
   },
   searchInput: {
+    flex: 1,
     borderWidth: 1,
-    borderColor: "#eee",
-    borderRadius: 4,
-    padding: 8,
-    marginBottom: 8,
+    borderColor: "#ccc",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    height: 40,
+    marginRight: 10,
   },
   searchButton: {
     backgroundColor: "#FF00FF",
-    padding: 12,
-    borderRadius: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
   },
   searchButtonText: {
-    color: "white",
-    textAlign: "center",
+    color: "#fff",
     fontSize: 16,
   },
   qnaList: {
     flex: 1,
+    paddingHorizontal: 16,
+    marginTop: 10,
   },
   qnaItem: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
     marginBottom: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     backgroundColor: "#FAFAFA",
     borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#eee",
   },
   questionRow: {
     flexDirection: "row",
@@ -265,64 +304,77 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   questionText: {
-    flex: 1,
     fontSize: 16,
     fontWeight: "600",
+    color: "#333",
   },
   answerContainer: {
-    marginTop: 10,
-    padding: 12,
+    marginTop: 8,
     backgroundColor: "#F9F9F9",
+    padding: 10,
     borderRadius: 8,
   },
   answerText: {
     fontSize: 14,
     color: "#555",
-    lineHeight: 20,
-    marginBottom: 10,
   },
   actionButtons: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
     marginTop: 10,
   },
   actionButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    flex: 1,
-    marginHorizontal: 4,
+    justifyContent: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    width: "45%",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
   },
   editButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#4CAF50", // 녹색
   },
   deleteButton: {
-    backgroundColor: "#F44336",
+    backgroundColor: "#F44336", // 빨간색
   },
   actionButtonText: {
     color: "#fff",
-    marginLeft: 4,
+    marginLeft: 8,
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "bold",
+  },
+  noData: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#888",
+    marginTop: 20,
   },
   writeButton: {
     position: "absolute",
     right: 16,
     bottom: 130,
-    backgroundColor: "white",
+    backgroundColor: "#FF00FF",
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: "#FF00FF",
+    borderRadius: 8,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 3,
   },
   writeButtonText: {
     fontSize: 14,
     marginRight: 4,
+    color: "#fff",
   },
 });
 

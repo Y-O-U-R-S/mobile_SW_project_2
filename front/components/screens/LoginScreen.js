@@ -58,6 +58,8 @@ const LoginScreen = ({ navigation }) => {
                 ? "관리자로 로그인 되었습니다."
                 : "메인 화면으로 이동합니다."
             );
+            setId("");
+            setPassword("");
             navigation.navigate("StartupMain");
           } else {
             Alert.alert("오류", "유저 정보를 가져오는 데 실패했습니다.");

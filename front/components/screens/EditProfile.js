@@ -94,7 +94,7 @@ const EditProfile = ({ navigation }) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Header title="개인정보 수정" />
+      <Header title="개인정보 수정" backButton={true} />
       <View style={styles.container}>
         {/* 이메일 (수정 불가) */}
         <View style={styles.inputContainer}>

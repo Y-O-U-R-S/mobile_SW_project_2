@@ -1,8 +1,9 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
 
-const Header = ({ title, backButton = true }) => {
+const Header = ({ title, backButton = false }) => {
   const navigation = useNavigation();
 
   return (
@@ -11,12 +12,12 @@ const Header = ({ title, backButton = true }) => {
         <TouchableOpacity
           onPress={() => navigation.goBack()}
           style={styles.backButton}
+          activeOpacity={0.8}
         >
-          <Text style={styles.backButtonText}>{"<"}</Text>
+          <Ionicons name="chevron-back" size={24} color="#007bff" />
         </TouchableOpacity>
       )}
       <Text style={styles.title}>{title}</Text>
-      <View style={styles.rightIcons}></View>
     </View>
   );
 };
@@ -24,40 +25,26 @@ const Header = ({ title, backButton = true }) => {
 const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: "center", // 세로 정렬
+    justifyContent: "center", // 가로 중앙 정렬
     backgroundColor: "#f8f8f8",
     paddingHorizontal: 15,
-    paddingVertical: 10,
+    height: 60,
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
-    height: 50,
+    position: "relative",
   },
   backButton: {
     position: "absolute",
-    left: 10,
-    top: "50%",
-    transform: [{ translateY: -12 }],
-    padding: 5,
-    width: 30,
-    height: 30,
+    left: 15,
     justifyContent: "center",
     alignItems: "center",
-  },
-  backButtonText: {
-    fontSize: 18,
-    color: "#007bff",
+    height: "100%", // 헤더 전체 높이를 버튼 클릭 영역으로
   },
   title: {
     fontSize: 20,
     fontWeight: "bold",
-    position: "absolute",
-    left: 0,
-    right: 0,
-    textAlign: "center",
-  },
-  rightIcons: {
-    flexDirection: "row",
+    color: "#333",
   },
 });
 

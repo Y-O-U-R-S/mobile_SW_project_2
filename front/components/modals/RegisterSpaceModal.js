@@ -27,7 +27,6 @@ const RegisterSpaceModal = ({
 }) => {
   const baseUrl = useBaseUrl(); // baseUrl을 가져옴
 
-  // 입력 필드를 초기화하는 함수
   const handleResetForm = () => {
     handleInputChange("name", "");
     handleInputChange("area", "");
@@ -63,17 +62,49 @@ const RegisterSpaceModal = ({
   };
 
   const handleRegisterSpace = async () => {
+    const numberRegex = /^\d+$/;
+    const phoneRegex = /^[0-9]{10,11}$/;
+
+    if (!formData.name) {
+      Alert.alert("오류", "공간 이름을 입력하세요.");
+      return;
+    }
+
+    if (!formData.area || !numberRegex.test(formData.area)) {
+      Alert.alert("오류", "면적(숫자) 값을 올바르게 입력하세요.");
+      return;
+    }
+
+    if (!formData.price || !numberRegex.test(formData.price)) {
+      Alert.alert("오류", "가격(숫자) 값을 올바르게 입력하세요.");
+      return;
+    }
+
+    if (!formData.contactNumber || !phoneRegex.test(formData.contactNumber)) {
+      Alert.alert("오류", "올바른 연락처를 입력하세요. (10-11자리 숫자)");
+      return;
+    }
+
+    if (!formData.address) {
+      Alert.alert("오류", "주소를 입력하세요.");
+      return;
+    }
+
+    if (!formData.description) {
+      Alert.alert("오류", "공간 설명을 입력하세요.");
+      return;
+    }
+
     if (
-      !formData.name ||
-      !formData.area ||
-      !formData.price ||
-      !formData.contactNumber ||
-      !formData.address ||
-      !formData.description ||
       !formData.distanceFromOnyangStation ||
-      !formData.imageUrl
+      !numberRegex.test(formData.distanceFromOnyangStation)
     ) {
-      Alert.alert("오류", "모든 필드를 입력하세요.");
+      Alert.alert("오류", "온양온천역에서의 거리(숫자)를 입력하세요.");
+      return;
+    }
+
+    if (!formData.imageUrl) {
+      Alert.alert("오류", "이미지를 선택하세요.");
       return;
     }
 
@@ -107,10 +138,10 @@ const RegisterSpaceModal = ({
       if (response.ok) {
         Alert.alert("성공", "공간이 성공적으로 등록되었습니다.");
         if (typeof fetchRentalSpaces === "function") {
-          await fetchRentalSpaces(); // 공간 리스트 새로고침
+          await fetchRentalSpaces();
         }
-        handleResetForm(); // 입력 필드 초기화
-        onClose(); // 모달 닫기
+        handleResetForm();
+        onClose();
       } else {
         const errorData = await response.text();
         Alert.alert("오류", `등록 실패: ${errorData}`);
@@ -122,8 +153,8 @@ const RegisterSpaceModal = ({
   };
 
   const handleCancel = () => {
-    handleResetForm(); // 입력 필드 초기화
-    onClose(); // 모달 닫기
+    handleResetForm();
+    onClose();
   };
 
   return (
@@ -150,12 +181,14 @@ const RegisterSpaceModal = ({
               <TextInput
                 style={styles.input}
                 placeholder="공간 이름"
+                placeholderTextColor="#666"
                 value={formData.name}
                 onChangeText={(text) => handleInputChange("name", text)}
               />
               <TextInput
                 style={styles.input}
                 placeholder="면적 (평수)"
+                placeholderTextColor="#666"
                 value={formData.area}
                 keyboardType="numeric"
                 onChangeText={(text) => handleInputChange("area", text)}
@@ -163,12 +196,14 @@ const RegisterSpaceModal = ({
               <TextInput
                 style={styles.input}
                 placeholder="가격 (월)"
+                placeholderTextColor="#666"
                 value={formData.price}
                 onChangeText={(text) => handleInputChange("price", text)}
               />
               <TextInput
                 style={styles.input}
                 placeholder="연락처"
+                placeholderTextColor="#666"
                 value={formData.contactNumber}
                 onChangeText={(text) =>
                   handleInputChange("contactNumber", text)
@@ -177,12 +212,14 @@ const RegisterSpaceModal = ({
               <TextInput
                 style={styles.input}
                 placeholder="주소"
+                placeholderTextColor="#666"
                 value={formData.address}
                 onChangeText={(text) => handleInputChange("address", text)}
               />
               <TextInput
                 style={styles.input}
                 placeholder="설명"
+                placeholderTextColor="#666"
                 multiline
                 numberOfLines={4}
                 value={formData.description}
@@ -191,6 +228,7 @@ const RegisterSpaceModal = ({
               <TextInput
                 style={styles.input}
                 placeholder="온양온천역에서의 거리 (분)"
+                placeholderTextColor="#666"
                 keyboardType="numeric"
                 value={formData.distanceFromOnyangStation}
                 onChangeText={(text) =>

@@ -15,17 +15,17 @@ import Header from "../common/Header";
 import Footer from "../common/StartupFooter";
 import { useBaseUrl } from "../../contexts/BaseUrlContext";
 import { LineChart } from "react-native-chart-kit";
-import PagerView from "react-native-pager-view"; // PagerView를 올바르게 import
+import PagerView from "react-native-pager-view";
 
 const StartupNearbyMarketInfoScreen = () => {
   const [coordinates, setCoordinates] = useState([]);
   const mapRef = useRef(null);
   const navigation = useNavigation();
-  const baseUrl = useBaseUrl(); // useBaseUrl 훅 호출
+  const baseUrl = useBaseUrl();
 
   const getCoordinates = async () => {
     try {
-      const response = await fetch(`${baseUrl}/rentalSpaces`); // baseUrl 사용
+      const response = await fetch(`${baseUrl}/rentalSpaces`);
       const rentalSpaces = await response.json();
 
       const results = await Promise.all(
@@ -97,56 +97,60 @@ const StartupNearbyMarketInfoScreen = () => {
 
   const graphData = [
     {
-      title: "임대 공간 가격 변화",
-      labels: ["1월", "2월", "3월", "4월", "5월", "6월"],
-      datasets: [{ data: [300, 450, 320, 400, 500, 600] }],
+      title: "11월 상권 추정 매출",
+      highlight: "약 1억 218만 원",
+      labels: ["24/07", "24/08", "24/09", "24/10"],
+      datasets: [{ data: [1.1, 1.0, 1.3, 1.1] }],
     },
     {
-      title: "사용 빈도 변화",
-      labels: ["1월", "2월", "3월", "4월", "5월", "6월"],
-      datasets: [{ data: [200, 300, 250, 310, 400, 450] }],
+      title: "11월 고객 방문 추정",
+      highlight: "약 5,200명",
+      labels: ["24/07", "24/08", "24/09", "24/10"],
+      datasets: [{ data: [5000, 5100, 5300, 5200] }],
     },
     {
-      title: "매출 성장률",
-      labels: ["1월", "2월", "3월", "4월", "5월", "6월"],
-      datasets: [{ data: [10, 20, 15, 25, 30, 35] }],
+      title: "11월 신규 고객 비율",
+      highlight: "약 35%",
+      labels: ["24/07", "24/08", "24/09", "24/10"],
+      datasets: [{ data: [30, 32, 35, 34] }],
     },
   ];
 
   const renderGraph = ({ item }) => (
-    <View style={styles.graphContainer}>
-      <Text style={styles.graphTitle}>{item.title}</Text>
+    <View style={[styles.graphContainer, { marginTop: 95 }]}>
+      <Text style={styles.graphTitle}>
+        {item.title}
+        <Text style={styles.graphHighlight}> {item.highlight}</Text>
+      </Text>
       <LineChart
         data={{
           labels: item.labels,
           datasets: item.datasets,
         }}
-        width={Dimensions.get("window").width} // 100% 화면 너비
-        height={170} // 고정 높이로 설정
-        yAxisLabel="₩"
-        yAxisSuffix="k"
+        width={Dimensions.get("window").width * 0.98}
+        height={160}
+        yAxisSuffix={item.title.includes("매출") ? "억" : ""}
         chartConfig={{
-          backgroundColor: "#e26a00",
-          backgroundGradientFrom: "#fb8c00",
-          backgroundGradientTo: "#ffa726",
+          backgroundColor: "#fff",
+          backgroundGradientFrom: "#fff",
+          backgroundGradientTo: "#fff",
           decimalPlaces: 1,
-          color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-          labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-          style: {
-            borderRadius: 16,
-            paddingBottom: 20, // 아래쪽에 여백을 추가하여 라벨이 잘리지 않도록 설정
-          },
+          color: (opacity = 1) => `rgba(255, 102, 0, ${opacity})`,
+          labelColor: (opacity = 1) => `rgba(102, 102, 102, ${opacity})`,
           propsForDots: {
             r: "6",
             strokeWidth: "2",
-            stroke: "#ffa726",
+            stroke: "rgba(255, 102, 0, 1)",
+          },
+          propsForBackgroundLines: {
+            stroke: "#ddd",
+            strokeDasharray: "3",
           },
         }}
         bezier
         style={{
           marginVertical: 8,
-          borderRadius: 16,
-          marginBottom: 20, // 아래쪽에 충분한 여백을 추가하여 라벨이 보이도록 함
+          borderRadius: 10,
         }}
       />
     </View>
@@ -230,7 +234,7 @@ const styles = StyleSheet.create({
   },
   map: {
     width: Dimensions.get("window").width,
-    height: Dimensions.get("window").height * 0.5, // 맵의 높이를 절반으로 설정
+    height: Dimensions.get("window").height * 0.5,
   },
   markerContainer: {
     alignItems: "center",
@@ -274,12 +278,10 @@ const styles = StyleSheet.create({
   },
   graphContainer: {
     flex: 1,
-    marginBottom: -150, // 푸터와의 공간을 확보하기 위한 여백 추가
+    paddingHorizontal: 16,
   },
   pagerView: {
     flex: 1,
-    marginTop: 20,
-    marginBottom: 20,
   },
   page: {
     justifyContent: "center",
@@ -290,6 +292,12 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     textAlign: "center",
+    marginBottom: 10,
+    color: "#333",
+  },
+  graphHighlight: {
+    fontWeight: "bold",
+    color: "rgba(255, 102, 0, 1)",
   },
 });
 
