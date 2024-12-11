@@ -118,13 +118,15 @@ const LoginScreen = ({ navigation }) => {
         <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
           <Text style={styles.loginButtonText}>로그인</Text>
         </TouchableOpacity>
-        <View style={styles.buttonRow}>
+        <View style={styles.linkContainer}>
           <TouchableOpacity
             style={styles.subButton}
             onPress={() => navigation.navigate("CheckIdScreen")}
           >
             <Text style={styles.subButtonText}>비밀번호 찾기</Text>
           </TouchableOpacity>
+
+          <Text style={styles.divider}>|</Text>
           <TouchableOpacity
             style={styles.subButton}
             onPress={() => navigation.navigate("SignUp")}
@@ -191,6 +193,7 @@ const styles = StyleSheet.create({
     width: "80%",
     alignItems: "center",
     marginBottom: 20,
+    position: "relative",
   },
   loginButton: {
     backgroundColor: "#FFCC00",
@@ -199,21 +202,27 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
+    marginBottom: 10,
   },
   loginButtonText: {
     fontSize: 23,
     fontWeight: "bold",
     color: "#000",
   },
-  buttonRow: {
-    flexDirection: "row", // 버튼을 가로로 정렬
-    justifyContent: "flex-end", // 오른쪽 정렬
-    marginTop: 10,
-    width: "100%", // 버튼 컨테이너 너비
+  linkContainer: {
+    position: "absolute",
+    bottom: -20,
+    right: 0,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  divider: {
+    marginHorizontal: 10,
+    fontSize: 14,
+    color: "#ffffff99",
   },
   subButton: {
     alignItems: "center",
-    marginHorizontal: 10, // 버튼 간 간격 설정
   },
   subButtonText: {
     fontSize: 14,
