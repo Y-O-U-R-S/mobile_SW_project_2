@@ -13,6 +13,8 @@ import SpaceRentalListScreen from "./components/screens/StartupSpaceRentalListSc
 import StartupMyPageScreen from "./components/screens/StartupMyPageScreen";
 import NoticeScreen from "./components/screens/NoticeScreen";
 import EditProfile from "./components/screens/EditProfile";
+import CheckIdScreen from "./components/screens/CheckIdScreen";
+import ResetPassword from "./components/screens/ResetPassword";
 import { UserProvider } from "./contexts/UserContext";
 import { BaseUrlProvider } from "./contexts/BaseUrlContext";
 
@@ -53,6 +55,8 @@ export default function App() {
                 name="StartupMyPage"
                 component={StartupMyPageScreen}
               />
+              <Stack.Screen name="CheckIdScreen" component={CheckIdScreen} />
+              <Stack.Screen name="ResetPassword" component={ResetPassword} />
               <Stack.Screen name="Notice" component={NoticeScreen} />
               <Stack.Screen name="EditProfile" component={EditProfile} />
             </Stack.Navigator>

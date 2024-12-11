@@ -20,7 +20,7 @@ import { useBaseUrl } from "../../contexts/BaseUrlContext";
 
 const NoticeScreen = () => {
   const [searchText, setSearchText] = useState("");
-  const [filteredNotices, setFilteredNotices] = useState([]); // 검색된 공지사항
+  const [filteredNotices, setFilteredNotices] = useState([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [isEditMode, setEditMode] = useState(false);
   const [questionTitle, setQuestionTitle] = useState("");
@@ -42,7 +42,7 @@ const NoticeScreen = () => {
       }
       const data = await response.json();
       setNotices(data);
-      setFilteredNotices(data); // 초기 공지사항 표시
+      setFilteredNotices(data);
     } catch (error) {
       console.error("Error fetching notices:", error);
     } finally {
@@ -205,11 +205,11 @@ const NoticeScreen = () => {
     <SafeAreaView style={styles.container}>
       <Header title="공지사항" backButton={true} />
 
-      {/* 검색 기능 추가 */}
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
           placeholder="제목 검색"
+          placeholderTextColor="#999"
           value={searchText}
           onChangeText={setSearchText}
         />
@@ -220,7 +220,7 @@ const NoticeScreen = () => {
 
       <ScrollView style={styles.qnaList}>
         {loading ? (
-          <ActivityIndicator size="large" color="#FF00FF" />
+          <ActivityIndicator size="large" color="#F56A79" />
         ) : filteredNotices.length > 0 ? (
           filteredNotices.map((notice) => (
             <QnAItem key={notice.id} notice={notice} />
@@ -269,14 +269,15 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#F56A79",
     borderRadius: 8,
     paddingHorizontal: 10,
     height: 40,
     marginRight: 10,
+    color: "#000",
   },
   searchButton: {
-    backgroundColor: "#FF00FF",
+    backgroundColor: "#F56A79",
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -296,7 +297,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: "#F56A79",
   },
   questionRow: {
     flexDirection: "row",
@@ -331,17 +332,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: 8,
     width: "45%",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
   },
   editButton: {
-    backgroundColor: "#4CAF50", // 녹색
+    backgroundColor: "#4CAF50",
   },
   deleteButton: {
-    backgroundColor: "#F44336", // 빨간색
+    backgroundColor: "#F44336",
   },
   actionButtonText: {
     color: "#fff",
@@ -359,17 +355,12 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 16,
     bottom: 130,
-    backgroundColor: "#FF00FF",
+    backgroundColor: "#F56A79",
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    elevation: 3,
   },
   writeButtonText: {
     fontSize: 14,

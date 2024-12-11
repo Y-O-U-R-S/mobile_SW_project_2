@@ -118,12 +118,20 @@ const LoginScreen = ({ navigation }) => {
         <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
           <Text style={styles.loginButtonText}>로그인</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.signupButton}
-          onPress={() => navigation.navigate("SignUp")}
-        >
-          <Text style={styles.signupButtonText}>회원가입</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonRow}>
+          <TouchableOpacity
+            style={styles.subButton}
+            onPress={() => navigation.navigate("CheckIdScreen")}
+          >
+            <Text style={styles.subButtonText}>비밀번호 찾기</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.subButton}
+            onPress={() => navigation.navigate("SignUp")}
+          >
+            <Text style={styles.subButtonText}>회원가입</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </LinearGradient>
   );
@@ -149,18 +157,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#fff",
     fontWeight: "bold",
-    textShadowColor: "#000", // 테두리 색상
-    textShadowOffset: { width: 1, height: 1 }, // 테두리 두께
-    textShadowRadius: 1, // 테두리 흐림 효과
+    textShadowColor: "#000",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 1,
   },
   title: {
     fontSize: 40,
     fontWeight: "bold",
     color: "#fff",
     marginBottom: 40,
-    textShadowColor: "#000", // 테두리 색상
-    textShadowOffset: { width: 1, height: 1 }, // 테두리 두께
-    textShadowRadius: 2, // 테두리 흐림 효과
+    textShadowColor: "#000",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   inputContainer: {
     width: "80%",
@@ -181,7 +189,6 @@ const styles = StyleSheet.create({
   },
   loginContainer: {
     width: "80%",
-    position: "relative",
     alignItems: "center",
     marginBottom: 20,
   },
@@ -198,14 +205,17 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#000",
   },
-  signupButton: {
-    position: "absolute",
-    right: -10,
-    bottom: -30,
-    width: 80,
-    alignItems: "center",
+  buttonRow: {
+    flexDirection: "row", // 버튼을 가로로 정렬
+    justifyContent: "flex-end", // 오른쪽 정렬
+    marginTop: 10,
+    width: "100%", // 버튼 컨테이너 너비
   },
-  signupButtonText: {
+  subButton: {
+    alignItems: "center",
+    marginHorizontal: 10, // 버튼 간 간격 설정
+  },
+  subButtonText: {
     fontSize: 14,
     fontWeight: "bold",
     color: "#ffffff99",
